@@ -1,0 +1,8 @@
+{
+  "verbose": true,
+  "ignore": [
+    "*.test.ts",
+    ".git"
+  ],
+  "ext": "ts"
+}

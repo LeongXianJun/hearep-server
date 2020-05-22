@@ -2,9 +2,9 @@ import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 
-import endPoints from './src/endpoints'
-
 require('custom-env').env()
+
+import endPoints from './src/endpoints'
 
 const PORT = process.env.PORT || 3000
 
@@ -25,12 +25,8 @@ async function main() {
         res.status(200).json({ name: 'todoman-backend' })
     })
 
-    app.listen(PORT, () => {//err => {
-        // if (err) {
-        //     throw err
-        // }
-        // eslint-disable-next-line no-console
-        console.log(`API server in ${process.env.NODE_ENV} is listening on port ${PORT}`)
+    app.listen(PORT, () => {
+        console.log(`API server ${process.env.Environment? `in ${process.env.Environment} `: ``}is listening on port ${PORT}`)
     })
 }
 

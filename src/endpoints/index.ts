@@ -1,8 +1,16 @@
 import tryFunction from './try'
-import { displayAllHealthRecord } from './healthrecords'
+import { displayAllHealthRecords, insertHealthRecord, removeHealthRecord, updateHealthRecord } from './healthrecords'
+import { displayUser, insertUser, removeUser, updateUser } from './users'
 
 const endPoints: EndPoint[] = [
-  displayAllHealthRecord,
+  displayAllHealthRecords,
+  insertHealthRecord,
+  removeHealthRecord,
+  updateHealthRecord,
+  displayUser,
+  insertUser,
+  removeUser,
+  updateUser,
   tryFunction
 ]
 
@@ -12,7 +20,7 @@ const endPoints: EndPoint[] = [
  */
 export interface EndPoint {
   name: string
-  type: 'GET' | 'SET' | 'POST' | 'PUT'
+  type: 'POST' | 'PUT'
   description: string
   method: (data?: any) => Promise<any>
 }

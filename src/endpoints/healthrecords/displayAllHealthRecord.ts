@@ -1,12 +1,15 @@
 import { EndPoint } from '../'
 import { allHR } from "../../connections/healthrecords"
 
-const displayAllHealthRecord: EndPoint = {
+const displayAllHealthRecords: EndPoint = {
   name: '/healthrecords/all',
-  type: 'GET',
+  type: 'POST',
   description: 'To fetch all of the health records',
-  method: () =>
-    allHR()
+  method: ({ }: INPUT) =>
+    allHR().then(allHR => allHR.filter(hr => hr.deleteAt))
 }
 
-export default displayAllHealthRecord
+type INPUT = {
+}
+
+export default displayAllHealthRecords

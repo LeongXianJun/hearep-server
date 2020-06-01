@@ -21,9 +21,11 @@
   },
   "include": [
     "src",
-    "index.ts"
+    "index.ts",
+    "test"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "coverage"
   ]
 }

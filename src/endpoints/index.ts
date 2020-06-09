@@ -1,13 +1,17 @@
+import Joi from '@hapi/joi'
 import tryFunction from './try'
-import { displayAllHealthRecords, insertHealthRecord, removeHealthRecord, updateHealthRecord } from './healthrecords'
-import { displayUser, insertUser, removeUser, updateUser } from './users'
+import { displayUser, getPatients, getMedicalStaff, insertUser, removeUser, updateUser } from './users'
+import { getAllRecords, getAllPatientRecords, insertHealthRecord, removeHealthRecord, updateHealthRecord } from './healthrecords'
 
 const endPoints: EndPoint[] = [
-  displayAllHealthRecords,
+  getAllRecords,
+  getAllPatientRecords,
   insertHealthRecord,
   removeHealthRecord,
   updateHealthRecord,
   displayUser,
+  getPatients,
+  getMedicalStaff,
   insertUser,
   removeUser,
   updateUser,
@@ -22,6 +26,7 @@ export interface EndPoint {
   name: string
   type: 'POST' | 'PUT'
   description: string
+  schema: Joi.ObjectSchema
   method: (data?: any) => Promise<any>
 }
 

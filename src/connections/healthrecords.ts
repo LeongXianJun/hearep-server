@@ -7,84 +7,127 @@ const collection = () => db.collection(
     : 'healthrecords'
 )
 
-const allHR = () =>
+const allHR = (patientId: string) =>
   collection()
-    // .where('deleteAt', '==', null)
+    .where('patientId', '==', patientId)
     .get()
     .then(result => {
-      return result.docs.map(r =>
-        r.data()
-      )
-    })
-    .catch(err => {
-      throw new Error(err)
-      return [] as HR[]
+      return result.docs.reduce<FirebaseFirestore.DocumentData[]>((all, r) => {
+        const data = r.data()
+        if (data.deleteAt === undefined) {
+          return [ ...all, { id: r.id, ...data } ]
+        } else {
+          return all
+        }
+      }, [])
+    }).then(datas => {
+      if (datas.length > 0)
+        return datas
+      else
+        throw new Error('No more record in the system yet')
     })
 
-const insertHR = (input: { type: string, medicalStaffID: string, patientID: string }) =>
+const insertHR = (type: HR[ 'type' ]) => (input: {
+  medicalStaffId: string, patientId: string, date: Date, appId?: string, illness?: string, clinicalOpinion?: string, prescriptionId?: string, refillDate?: Date, medications?: Medication[], title?: string, comment?: string, data?: LabTestField[]
+}) =>
   collection()
     .add({
-      type: input.type,
-      medicalStaffID: input.medicalStaffID,
-      patientID: input.patientID
+      type,
+      medicalStaffId: input.medicalStaffId,
+      patientId: input.patientId,
+      date: input.date,
+      ...type === 'Health Prescription'
+        ? {
+          appId: input.appId,
+          illness: input.illness,
+          clinicalOpinion: input.clinicalOpinion
+        }
+        : type === 'Medication Record'
+          ? {
+            prescriptionId: input.prescriptionId,
+            refillDate: input.refillDate,
+            medications: input.medications
+          }
+          : type === 'Lab Test Result'
+            ? {
+              appId: input.appId,
+              title: input.title,
+              comment: input.comment,
+              data: input.data
+            }
+            : {}
     })
     .then(docRef => {
-      console.log('Document written with ID: ', docRef.id)
-      return { response: 'Insert successfully' }
+      // console.log('Document written with ID: ', docRef.id)
+      return { response: 'Insert successfully', docId: docRef.id }
     })
     .catch(err => {
       throw new Error('Error adding document: ' + err)
     })
 
-const updateHR = (input: HR) =>
+const updateHR = (id: string) => (input: {
+  illness?: string, clinicalOpinion?: string, refillDate?: Date, medications?: Medication[], title?: string, comment?: string, data?: LabTestField[]
+}) =>
   collection()
-    .doc(input.id)
-    .set({
+    .doc(id)
+    .update({
       ...input
     })
     .then(docRef => {
-      console.log('Document written (mod) with ID: ', docRef)
+      // console.log('Document written (mod) with ID: ', docRef)
       return { response: 'Update successfully' }
     })
     .catch(err => {
       throw new Error('Error updating document: ' + err)
     })
 
-const deleteHR = (HRID: string) =>
-  collection().doc(HRID)
-    .set({
-      deleteAt: firestore.Timestamp.now()
-    }, { merge: true })
-    .then(docRef => {
-      console.log('Document written (del) with ID: ', docRef)
-      return { response: 'Delete successfully' }
-    })
-    .catch(err => {
-      throw new Error('Error deleting document: ' + err)
-    })
+const deleteHR = (hrid: string) => {
+  const batch = db.batch()
+  return collection()
+    .where('prescriptionId', '==', hrid)
+    .get()
+    .then(docs =>
+      docs.forEach(doc => {
+        batch.update(doc.ref, { deleteAt: firestore.Timestamp.now() })
+      })
+    ).then(() =>
+      batch.update(collection().doc(hrid), { deleteAt: firestore.Timestamp.now() })
+    ).then(() =>
+      batch.commit()
+        .then(docRef => {
+          // console.log('Document written (del) with ID: ', docRef)
+          return { response: 'Delete successfully' }
+        })
+        .catch(err => {
+          throw new Error('Error deleting document: ' + err)
+        })
+    )
+
+}
 
 export type HR = {
   id: string
-  medicalStaffID: string
-  patientID: string
-  date?: Date
-  deleteAt?: firestore.Timestamp
-} & ({
-  type: 'Health Prescription'
-  appID: string // appointment ID
-  illness: string
-  clinicalOpinion: string
-} | {
-  type: 'Medication Record'
-  prescriptionID: string
-  medications: Medication[]
-} | {
-  type: 'Lab Test Result'
-  appID: string // appointment ID
-  title: string
-  comment: string
-  data: LabTestField[]
-}
+  medicalStaffId: string
+  patientId: string
+  date: Date
+} & (
+    {
+      type: 'Health Prescription'
+      appId: string // appointment id
+      illness: string
+      clinicalOpinion: string
+    } | {
+      type: 'Medication Record'
+      prescriptionId: string
+      refillDate: Date
+      medications: Medication[]
+    } | {
+      type: 'Lab Test Result'
+      appId: string // appointment id
+      title: string
+      comment: string
+      data: LabTestField[]
+    }
   )
 
 export type Medication = {

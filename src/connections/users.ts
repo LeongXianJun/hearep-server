@@ -7,34 +7,83 @@ const collection = () => db.collection(
     : 'users'
 )
 
-const getUser = (userID: string) =>
+const getUser = (uid: string) =>
   collection()
-    .where('firebaseID', '==', userID)
+    .doc(uid)
+    .get()
+    .then(result => {
+      const user = result.data()
+      if (user) {
+        if (user.deleteAt) {
+          throw new Error('This account is removed.')
+        } else {
+          return { id: user.id, ...user }
+        }
+      } else {
+        throw new Error('No such user in the system')
+      }
+    })
+
+const getAllPatients = () =>
+  collection()
+    .where('type', '==', 'Patient')
     .get()
     .then(result => {
       if (result.empty)
-        throw new Error('No such record in the users collection')
+        throw new Error('No patient in the system yet')
       else {
-        const user = result.docs[ 0 ]
-        return { id: user.id, ...user.data() }
+        return result.docs.reduce<FirebaseFirestore.DocumentData[]>((all, r) => {
+          const data = r.data()
+          if (data.deleteAt === undefined) {
+            return [ ...all, { id: r.id, ...data } ]
+          } else {
+            return all
+          }
+        }, [])
       }
-    })
-    .catch(err => {
-      throw new Error(err)
+    }).then(datas => {
+      if (datas.length > 0)
+        return datas
+      else
+        throw new Error('No more patient in the system yet')
     })
 
-const insertUser = (type: 'Medical Staff' | 'Patient') => (input: { firebaseID: string, username: string, dob: string, gender: 'M' | 'F', email: string, medicationInstitution?: MedicalInstituition, phoneNumber?: string, occupation?: string }) =>
+const getAllMedicalStaff = () =>
   collection()
-    .add({
+    .where('type', '==', 'Medical Staff')
+    .get()
+    .then(result => {
+      if (result.empty)
+        throw new Error('No medical staff in the system yet')
+      else {
+        return result.docs.reduce<FirebaseFirestore.DocumentData[]>((all, r) => {
+          const data = r.data()
+          if (data.deleteAt === undefined) {
+            return [ ...all, { id: r.id, ...data } ]
+          } else {
+            return all
+          }
+        }, [])
+      }
+    }).then(datas => {
+      if (datas.length > 0)
+        return datas
+      else
+        throw new Error('No more medical staff in the system yet')
+    })
+
+const insertUser = (type: User[ 'type' ]) => (input: { uid: string, username: string, dob: string, gender: User[ 'gender' ], email: string, medicalInstituition?: MedicalInstituition, phoneNumber?: string, occupation?: string }) =>
+  collection()
+    .doc(input.uid)
+    .create({
       type,
-      firebaseID: input.firebaseID,
       username: input.username,
       dob: input.dob,
       gender: input.gender,
       email: input.email,
       ...type === 'Medical Staff'
         ? {
-          medicalInstituition: { ...input.medicationInstitution }
+          medicalInstituition: { ...input.medicalInstituition }
         }
         : type === 'Patient'
           ? {
@@ -44,34 +93,35 @@ const insertUser = (type: 'Medical Staff' | 'Patient') => (input: { firebaseID: 
           : {}
     })
     .then(docRef => {
-      console.log('Document written with ID: ', docRef.id)
-      return { response: 'Insert successfully' }
+      // console.log('Document written with ID: ', docRef)
+      return { response: 'Insert successfully', docId: input.uid }
     })
     .catch(err => {
       throw new Error('Error adding document: ' + err)
     })
 
-const updateUser = (input: User) =>
+const updateUser = (uid: string, input: { username: string, dob: Date, gender: User[ 'gender' ], medicalInstituition?: MedicalInstituition, occupation?: string }) =>
   collection()
-    .doc(input.id)
-    .set({
+    .doc(uid)
+    .update({
       ...input
     })
     .then(docRef => {
-      console.log('Document written (mod) with ID: ', docRef)
+      // console.log('Document written (mod) with ID: ', input.id)
       return { response: 'Update successfully' }
     })
     .catch(err => {
       throw new Error('Error updating document: ' + err)
     })
 
-const deleteUser = (userID: string) =>
-  collection().doc(userID)
-    .set({
+const deleteUser = (uid: string) =>
+  collection()
+    .doc(uid)
+    .update({
       deleteAt: firestore.Timestamp.now()
-    }, { merge: true })
+    })
     .then(docRef => {
-      console.log('Document written (del) with ID: ', docRef)
+      // console.log('Document written (del) with ID: ', docRef)
       return { response: 'Delete successfully' }
     })
     .catch(err => {
@@ -79,8 +129,7 @@ const deleteUser = (userID: string) =>
     })
 
 export type User = {
-  id: string
-  firebaseID: string // auth ID
+  id: string // similar to firebase auth id
   username: string
   dob: string
   gender: 'M' | 'F'
@@ -105,6 +154,8 @@ export type MedicalInstituition = {
 
 export {
   getUser as getU,
+  getAllPatients as getAllP,
+  getAllMedicalStaff as getAllMS,
   insertUser as insertU,
   updateUser as updateU,
   deleteUser as deleteU

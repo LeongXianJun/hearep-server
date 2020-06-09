@@ -1,4 +1,5 @@
-export { default as displayAllHealthRecords } from './displayAllHealthRecord'
+export { default as getAllPatientRecords } from './getAllPatientRecords'
+export { default as getAllRecords } from './getAllRecords'
 export { default as insertHealthRecord } from './insertHealthRecord'
 export { default as updateHealthRecord } from './updateHealthRecord'
 export { default as removeHealthRecord } from './removeHealthRecord'

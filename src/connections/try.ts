@@ -2,14 +2,10 @@ import db from './'
 
 const tryConnection = () =>
   db.collection('healthrecords').get()
-    .then((result) => {
-      result.forEach(r =>
-        console.log(JSON.stringify(r.data()))
-      )
+    .then((result) => result.docs.map(r => r.data()))
+    .catch(err => {
+      throw new Error(err)
     })
-    .catch(err => 
-      console.log(err)
-    )
 
 export {
   tryConnection

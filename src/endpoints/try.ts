@@ -1,16 +1,18 @@
+import { EndPoint } from './'
 import { tryConnection } from "../connections/try"
 
-const tryFunction = {
+const tryFunction: EndPoint = {
   name: '/try',
+  type: 'POST',
   description: 'This is to try the connection',
-  method: (data: Data) => {
-    tryConnection()
-    console.log(data)
-    // console.log(JSON.stringify(data))
-  }
+  method: ({ }: INPUT) =>
+    new Promise((resolve, reject) => {
+      tryConnection()
+      resolve({ result: 'success' })
+    })
 }
 
-interface Data{
+type INPUT = {
 
 }
 

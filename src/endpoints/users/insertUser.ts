@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
-import { insertU, MedicalInstituition } from "../../connections/users"
+import { insertU, MedicalInstituition } from "../../connections"
 import { UserSchema } from '../../JoiSchema'
 
 const insertUser: EndPoint = {
@@ -19,7 +19,7 @@ type INPUT = {
   uid: string
   user: {
     username: string
-    dob: string
+    dob: Date
     gender: 'M' | 'F'
     email: string
   } & (

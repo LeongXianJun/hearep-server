@@ -22,8 +22,10 @@ afterAll(async () => {
         allC.reduce<FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>[]>((a, col) => [ ...a, ...col.docs ], []).forEach(doc => batch.delete(doc.ref))
       )
 
-  // remove all data in each testing collection
-  await removeAll([ 'test_users', 'test_healthrecords' ])
+  /** 
+   * remove all data in each testing collection
+   */
+  await removeAll([ 'test_users', 'test_healthrecords', 'test_appointments' ])
     .then(() => batch.commit())
 })
 
@@ -49,7 +51,7 @@ describe('Connection', () => {
 })
 
 // this section may affect the following part of the testing
-describe('User Endpoints', () => {
+describe('User', () => {
   it('fetch not existing account', async () => {
     const { body: result } = await post('/user/get', emailId)
     expect(result).toHaveProperty('errors', 'No such user in the system')
@@ -60,7 +62,7 @@ describe('User Endpoints', () => {
     expect(result).toHaveProperty('errors', 'No patient in the system yet')
   })
 
-  it('Patient Account Creation to Account Removal', async () => {
+  it('Patient Account Creation', async () => {
     // Create Account via Web
     const { body: result1 } = await post('/user/create', phoneId, {
       user: {
@@ -81,7 +83,7 @@ describe('User Endpoints', () => {
     expect(result2).toHaveProperty('occupation')
   })
 
-  it('Medical Staff Account Creation', async () => {
+  it('Medical Staff Account Creation and Update', async () => {
     const { body: result1 } = await post('/user/create', emailId, {
       user: {
         username: 'JoneLeong',
@@ -104,7 +106,6 @@ describe('User Endpoints', () => {
     expect(result2).toHaveProperty('type', 'Medical Staff')
     expect(result2).toHaveProperty('medicalInstituition')
 
-
     // Update Profile
     const newName = 'Mendy'
     const { body: result3 } = await put('/user/update', emailId, {
@@ -122,30 +123,15 @@ describe('User Endpoints', () => {
 
     const { body: result4 } = await post('/user/get', emailId)
     expect(result4).toHaveProperty('username', newName)
-
-    // Remove the account
-    const { body: result5 } = await put('/user/delete', emailId)
-    expect(result5).toHaveProperty('response', 'Delete successfully')
-
-    const { body: result6 } = await post('/user/get', emailId)
-    expect(result6).toHaveProperty('errors', 'This account is removed.')
   })
 
   it('get all of Patient Accounts', async () => {
     const { body: result } = await post('/patient/all', emailId)
     expect(result).toHaveLength(1)
   })
-
-  it('remove the last patient account', async () => {
-    const { body: result1 } = await put('/user/delete', phoneId)
-    expect(result1).toHaveProperty('response', 'Delete successfully')
-
-    const { body: result2 } = await post('/patient/all', emailId)
-    expect(result2).toHaveProperty('errors', 'No more patient in the system yet')
-  })
 })
 
-describe.only('Health Record', () => {
+describe('Health Record', () => {
   it('from insertion to deletion', async () => {
     // insert a record
     const { body: result1 } = await post('/healthrecords/insert', emailId, {
@@ -277,6 +263,361 @@ describe.only('Health Record', () => {
     const LTPatient = result3[ 'Lab Test Result' ][ 0 ]
     expect(LTPatient).toHaveProperty('title', 'Blood Test')
     expect(LTPatient).toHaveProperty('data')
+  })
+})
+
+describe('Appointment (byTime)', () => {
+  it('Schedule an appointment with medical staff who has not set working time', async () => {
+    const { body: result1 } = await post('/appointment/insert', phoneId, {
+      appointment: {
+        medicalStaffId: emailId,
+        date: new Date(),
+        address: '666, Jalan UTAR, UTAR, Malaysia',
+        type: 'byTime',
+        time: new Date(2020, 6, 15, 13)
+      }
+    })
+    expect(result1).toHaveProperty('errors', 'This medical staff does not set his/her working time yet')
+  })
+
+  // have to run with the users test case
+  it('Update Working Time', async () => {
+    const { body: result1 } = await post('/workingTime/timeinterval', emailId)
+    expect(result1[ 'TimeInterval' ]).toHaveLength(10)
+
+    const { body: result2 } = await put('/workingTime/update', emailId, {
+      workingTime: {
+        type: 'byTime',
+        timeslots: [
+          { day: 1, slots: [ 1, 2, 3, 4, 5, 6, 7 ] },
+          { day: 2, slots: [ 1, 2, 3, 4, 5, 6, 7 ] },
+          { day: 3, slots: [ 5, 6, 7, 8, 9 ] },
+          { day: 4, slots: [ 1, 2, 3, 4, 5, 6, 7 ] },
+          { day: 5, slots: [ 1, 2, 3, 4, 5, 6, 7 ] },
+          { day: 6, slots: [ 1, 2, 3, 4, 5 ] }
+        ]
+      }
+    })
+    expect(result2).toHaveProperty('response', 'Update successfully')
+
+    // check available timeslot
+    const { body: result3 } = await post('/workingTime/get', phoneId, {
+      medicalStaffId: emailId,
+      date: new Date(2020, 6, 14)
+    })
+    expect(result3).toHaveLength(6)
+  })
+
+  it('Schedule an appointment with a not available timeslot', async () => {
+    const { body: result1 } = await post('/appointment/insert', phoneId, {
+      appointment: {
+        medicalStaffId: emailId,
+        date: new Date(),
+        address: '666, Jalan UTAR, UTAR, Malaysia',
+        type: 'byTime',
+        time: new Date(2020, 6, 15, 10)
+      }
+    })
+    expect(result1).toHaveProperty('errors', 'This medical staff is not available in this timeslot')
+  })
+
+  it('Complete Appointment Lifecycle (byTime)', async () => {
+    // 1. Patient create an appointment
+    const { body: result1 } = await post('/appointment/insert', phoneId, {
+      appointment: {
+        medicalStaffId: emailId,
+        date: new Date(),
+        address: '666, Jalan UTAR, UTAR, Malaysia',
+        type: 'byTime',
+        time: new Date(2020, 6, 15, 13)
+      }
+    })
+    expect(result1).toHaveProperty('response', 'Insert successfully')
+
+    // 2. Patient check the appointment list
+    const { body: result2 } = await post('/appointment/patient', phoneId)
+    expect(result2).toHaveProperty('Pending')
+    expect(result2).toHaveProperty('Accepted')
+    expect(result2).toHaveProperty('Rejected')
+    expect(result2).toHaveProperty('Waiting')
+    expect(result2).toHaveProperty('Completed')
+    expect(result2).toHaveProperty('Cancelled')
+
+    expect(result2[ 'Pending' ]).toHaveLength(1)
+    expect(result2[ 'Accepted' ]).toHaveLength(0)
+    expect(result2[ 'Rejected' ]).toHaveLength(0)
+    expect(result2[ 'Waiting' ]).toHaveLength(0)
+    expect(result2[ 'Completed' ]).toHaveLength(0)
+    expect(result2[ 'Cancelled' ]).toHaveLength(0)
+
+    const app = result2[ 'Pending' ][ 0 ]
+    expect(app).toHaveProperty('status', 'Pending')
+    expect(app).toHaveProperty('time', '2020-07-15T05:00:00.000Z')
+
+    // 3. Medical Staff update the status of the appointment to 'Accepted'
+    const { body: result3 } = await put('/appointment/update', emailId, {
+      appointment: {
+        id: app.id,
+        type: app.type,
+        status: 'Accepted'
+      }
+    })
+    expect(result3).toHaveProperty('response', 'Update successfully')
+
+    // 4. Patient check the updated appointment
+    const { body: result4 } = await post('/appointment/patient', phoneId)
+    expect(result4).toHaveProperty('Pending')
+    expect(result4).toHaveProperty('Accepted')
+    expect(result4).toHaveProperty('Rejected')
+    expect(result4).toHaveProperty('Waiting')
+    expect(result4).toHaveProperty('Completed')
+    expect(result4).toHaveProperty('Cancelled')
+
+    expect(result4[ 'Pending' ]).toHaveLength(0)
+    expect(result4[ 'Accepted' ]).toHaveLength(1)
+    expect(result4[ 'Rejected' ]).toHaveLength(0)
+    expect(result4[ 'Waiting' ]).toHaveLength(0)
+    expect(result4[ 'Completed' ]).toHaveLength(0)
+    expect(result4[ 'Cancelled' ]).toHaveLength(0)
+
+    const updatedApp = result4[ 'Accepted' ][ 0 ]
+    expect(updatedApp).toHaveProperty('status', 'Accepted')
+
+    // 5. Patient reschedule the appointment
+    const { body: result5 } = await put('/appointment/reschedule', phoneId, {
+      oldAppId: updatedApp.id,
+      newApp: {
+        medicalStaffId: updatedApp.medicalStaffId,
+        date: new Date(),
+        address: updatedApp.address,
+        type: 'byTime',
+        time: new Date(2020, 6, 15, 14)
+      }
+    })
+    expect(result5).toHaveProperty('response', 'Reschedule successfully')
+
+    // 6. Medical Staff check the appointment list
+    const { body: result6 } = await post('/appointment/medicalstaff', emailId)
+    expect(result6).toHaveProperty('Pending')
+    expect(result6).toHaveProperty('Accepted')
+    expect(result6).toHaveProperty('Rejected')
+    expect(result6).toHaveProperty('Waiting')
+    expect(result6).toHaveProperty('Completed')
+    expect(result6).toHaveProperty('Cancelled')
+
+    expect(result6[ 'Pending' ]).toHaveLength(1)
+    expect(result6[ 'Accepted' ]).toHaveLength(0)
+    expect(result6[ 'Rejected' ]).toHaveLength(0)
+    expect(result6[ 'Waiting' ]).toHaveLength(0)
+    expect(result6[ 'Completed' ]).toHaveLength(0)
+    expect(result6[ 'Cancelled' ]).toHaveLength(0)
+
+    const rescheduleApp = result6[ 'Pending' ][ 0 ]
+    expect(rescheduleApp).toHaveProperty('status', 'Pending')
+
+    // 7. Medical staff update the status again to 'Accepted'
+    const { body: result7 } = await put('/appointment/update', emailId, {
+      appointment: {
+        id: rescheduleApp.id,
+        type: rescheduleApp.type,
+        status: 'Accepted'
+      }
+    })
+    expect(result7).toHaveProperty('response', 'Update successfully')
+
+    // 8. After consultation, medical staff insert a health prescription (this will auto update the status of the appointment)
+    const { body: result8 } = await post('/healthrecords/insert', emailId, {
+      healthRecord: {
+        patientId: phoneId,
+        date: new Date(),
+        type: 'Health Prescription',
+        appId: rescheduleApp.id,
+        illness: 'Coding non stop',
+        clinicalOpinion: 'Take more rest and have a balance diet'
+      }
+    })
+    expect(result8).toHaveProperty('response', 'Insert successfully')
+
+    // 9. Patient check the health prescription
+    const { body: result9 } = await post('/healthrecords/patient', phoneId)
+    expect(result9[ 'Health Prescription' ]).toHaveLength(1)
+    expect(result9[ 'Health Prescription' ][ 0 ]).toHaveProperty('appId', rescheduleApp.id)
+  })
+
+  it('Schedule an overlapped Appointment', async () => {
+    const { body: result1 } = await post('/appointment/insert', phoneId, {
+      appointment: {
+        medicalStaffId: emailId,
+        date: new Date(),
+        address: '666, Jalan UTAR, UTAR, Malaysia',
+        type: 'byTime',
+        time: new Date(2020, 6, 15, 14)
+      }
+    })
+    expect(result1).toHaveProperty('errors', 'Medical staff has an appointment in this timeslot')
+  })
+})
+
+describe('Appointment (byNumber)', () => {
+  it('Get Turn (without setting the correct working time)', async () => {
+    const { body: result1 } = await post('/appointment/turn', phoneId, {
+      medicalStaffId: emailId,
+      date: new Date(2020, 4, 15, 9) // Friday
+    })
+    expect(result1).toHaveProperty('errors', 'Medical Staff does not offer this service yet')
+  })
+
+  it('Appointment Insert - Remove (byNumber)', async () => {
+    // Today = 2020-05-16
+    // 1. Medical Staff update the working time
+    const { body: result1 } = await put('/workingTime/update', emailId, {
+      workingTime: {
+        type: 'byNumber',
+        timeslots: [
+          { day: 1, startTime: new Date(0, 0, 0, 10), endTime: new Date(0, 0, 0, 17, 30) },
+          { day: 2, startTime: new Date(0, 0, 0, 10), endTime: new Date(0, 0, 0, 17, 30) },
+          { day: 3, startTime: new Date(0, 0, 0, 10), endTime: new Date(0, 0, 0, 17, 30) },
+          { day: 4, startTime: new Date(0, 0, 0, 8, 30), endTime: new Date(0, 0, 0, 12) },
+          { day: 5, startTime: new Date(0, 0, 0, 8, 30), endTime: new Date(0, 0, 0, 12) }
+        ]
+      }
+    })
+    expect(result1).toHaveProperty('response', 'Update successfully')
+
+    // 2. Fetch the current number of turn
+    const { body: result2 } = await post('/appointment/turn', phoneId, {
+      medicalStaffId: emailId,
+      date: new Date(2020, 4, 15, 9) // Friday
+    })
+    expect(result2).toHaveProperty('startTime')
+    expect(result2).toHaveProperty('endTime')
+
+    const startTime = new Date(result2[ 'startTime' ]),
+      endTime = new Date(result2[ 'endTime' ])
+    expect(startTime.getHours()).toEqual(8)
+    expect(startTime.getMinutes()).toEqual(30)
+    expect(endTime.getHours()).toEqual(12)
+    expect(result2).toHaveProperty('turn', 0)
+    const turn = result2[ 'turn' ]
+
+    // 3. Patient create an appointment
+    const { body: result3 } = await post('/appointment/insert', phoneId, {
+      appointment: {
+        medicalStaffId: emailId,
+        date: new Date(2020, 4, 15, 9),
+        address: '666, Jalan UTAR, UTAR, Malaysia',
+        type: 'byNumber',
+        turn: turn
+      }
+    })
+    expect(result3).toHaveProperty('response', 'Insert successfully')
+
+    // 4. Patient check the appointment list
+    const { body: result4 } = await post('/appointment/patient', phoneId)
+    expect(result4).toHaveProperty('Pending')
+    expect(result4).toHaveProperty('Accepted')
+    expect(result4).toHaveProperty('Rejected')
+    expect(result4).toHaveProperty('Waiting')
+    expect(result4).toHaveProperty('Completed')
+    expect(result4).toHaveProperty('Cancelled')
+
+    expect(result4[ 'Pending' ]).toHaveLength(0)
+    expect(result4[ 'Accepted' ]).toHaveLength(0)
+    expect(result4[ 'Rejected' ]).toHaveLength(0)
+    expect(result4[ 'Waiting' ]).toHaveLength(1)
+    expect(result4[ 'Completed' ]).toHaveLength(1)
+    expect(result4[ 'Cancelled' ]).toHaveLength(0)
+
+    const app = result4[ 'Waiting' ][ 0 ]
+    expect(app).toHaveProperty('status', 'Waiting')
+    expect(parseInt(app[ 'turn' ])).toEqual(turn)
+
+    // 5. Patient cancel the appointment
+    const { body: result5 } = await put('/appointment/cancel', phoneId, {
+      appId: app.id
+    })
+    expect(result5).toHaveProperty('response', 'Cancel successfully')
+
+    // 6. Medical Staff check the appointment list
+    const { body: result6 } = await post('/appointment/medicalstaff', emailId)
+    expect(result6).toHaveProperty('Pending')
+    expect(result6).toHaveProperty('Accepted')
+    expect(result6).toHaveProperty('Rejected')
+    expect(result6).toHaveProperty('Waiting')
+    expect(result6).toHaveProperty('Completed')
+    expect(result6).toHaveProperty('Cancelled')
+
+    expect(result6[ 'Pending' ]).toHaveLength(0)
+    expect(result6[ 'Accepted' ]).toHaveLength(0)
+    expect(result6[ 'Rejected' ]).toHaveLength(0)
+    expect(result6[ 'Waiting' ]).toHaveLength(0)
+    expect(result6[ 'Completed' ]).toHaveLength(1)
+    expect(result6[ 'Cancelled' ]).toHaveLength(1)
+  })
+
+  it('Get Turn', async () => {
+    const { body: result1 } = await post('/appointment/turn', phoneId, {
+      medicalStaffId: emailId,
+      date: new Date(2020, 4, 15, 9)
+    })
+    expect(result1).toHaveProperty('turn', 1)
+  })
+
+  it('Schedule appointment outside operating hour', async () => {
+    const { body: result1 } = await post('/appointment/turn', phoneId, {
+      medicalStaffId: emailId,
+      date: new Date(2020, 4, 15, 17)
+    })
+    expect(result1).toHaveProperty('errors', 'This medical staff does not operate during this working hour')
+
+    const { body: result2 } = await post('/appointment/insert', phoneId, {
+      appointment: {
+        medicalStaffId: emailId,
+        date: new Date(2020, 4, 15, 17),
+        address: '666, Jalan UTAR, UTAR, Malaysia',
+        type: 'byNumber',
+        turn: 1
+      }
+    })
+    expect(result2).toHaveProperty('errors', 'This medical staff does not operate during this working hour')
+  })
+
+  it('Schedule appointment during medical staff off day', async () => {
+    const { body: result1 } = await post('/appointment/turn', phoneId, {
+      medicalStaffId: emailId,
+      date: new Date(2020, 4, 16, 11)
+    })
+    expect(result1).toHaveProperty('errors', 'This medical staff does not operate on this day')
+
+    const { body: result2 } = await post('/appointment/insert', phoneId, {
+      appointment: {
+        medicalStaffId: emailId,
+        date: new Date(2020, 4, 16, 11),
+        address: '666, Jalan UTAR, UTAR, Malaysia',
+        type: 'byNumber',
+        turn: 1
+      }
+    })
+    expect(result2).toHaveProperty('errors', 'The medical staff does not operate on this day')
+  })
+})
+
+describe('Users cont.2', () => {
+  it('Medical Staff Account Removal', async () => {
+    // Remove the account
+    const { body: result1 } = await put('/user/delete', emailId)
+    expect(result1).toHaveProperty('response', 'Delete successfully')
+
+    const { body: result2 } = await post('/user/get', emailId)
+    expect(result2).toHaveProperty('errors', 'This account is removed.')
+  })
+
+  it('remove the last patient account', async () => {
+    const { body: result1 } = await put('/user/delete', phoneId)
+    expect(result1).toHaveProperty('response', 'Delete successfully')
+
+    const { body: result2 } = await post('/patient/all', emailId)
+    expect(result2).toHaveProperty('errors', 'No more patient in the system yet')
   })
 })
 

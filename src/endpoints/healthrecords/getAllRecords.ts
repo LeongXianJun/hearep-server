@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '..'
-import { allHR, HR } from "../../connections/healthrecords"
+import { allHR } from "../../connections"
 
 const getAllRecords: EndPoint = {
   name: '/healthrecords/medicalstaff',

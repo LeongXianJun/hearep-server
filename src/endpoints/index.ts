@@ -1,9 +1,17 @@
 import Joi from '@hapi/joi'
 import tryFunction from './try'
-import { displayUser, getPatients, getMedicalStaff, insertUser, removeUser, updateUser } from './users'
+import { displayUser, getPatients, getMedicalStaff, insertUser, removeUser, updateUser, updateWorkingTime, getTimeInterval, getAvailableTimeslot } from './users'
 import { getAllRecords, getAllPatientRecords, insertHealthRecord, removeHealthRecord, updateHealthRecord } from './healthrecords'
+import { cancelAppointment, getAllAppointments, getPatientAppointments, insertAppointment, rescheduleAppointment, updateStatus, getTurn } from './appointments'
 
 const endPoints: EndPoint[] = [
+  cancelAppointment,
+  getAllAppointments,
+  getPatientAppointments,
+  insertAppointment,
+  rescheduleAppointment,
+  updateStatus,
+  getTurn,
   getAllRecords,
   getAllPatientRecords,
   insertHealthRecord,
@@ -15,6 +23,9 @@ const endPoints: EndPoint[] = [
   insertUser,
   removeUser,
   updateUser,
+  updateWorkingTime,
+  getTimeInterval,
+  getAvailableTimeslot,
   tryFunction
 ]
 

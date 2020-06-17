@@ -15,7 +15,14 @@ const allHR = (patientId: string) =>
       return result.docs.reduce<FirebaseFirestore.DocumentData[]>((all, r) => {
         const data = r.data()
         if (data.deleteAt === undefined) {
-          return [ ...all, { id: r.id, ...data } ]
+          return [ ...all, {
+            id: r.id, ...data, date: data.date.toDate(),
+            ...data.refillDate
+              ? {
+                refillDate: data.refillDate.toDate()
+              }
+              : {}
+          } ]
         } else {
           return all
         }
@@ -35,7 +42,7 @@ const insertHR = (type: HR[ 'type' ]) => (input: {
       type,
       medicalStaffId: input.medicalStaffId,
       patientId: input.patientId,
-      date: input.date,
+      date: firestore.Timestamp.fromDate(new Date(input.date)),
       ...type === 'Health Prescription'
         ? {
           appId: input.appId,
@@ -45,8 +52,11 @@ const insertHR = (type: HR[ 'type' ]) => (input: {
         : type === 'Medication Record'
           ? {
             prescriptionId: input.prescriptionId,
-            refillDate: input.refillDate,
-            medications: input.medications
+            refillDate: firestore.Timestamp.fromDate(new Date(input.refillDate ?? new Date())),
+            medications: input.medications?.map(m => ({
+              ...m,
+              dosage: parseInt(m.dosage.toString())
+            }))
           }
           : type === 'Lab Test Result'
             ? {
@@ -71,7 +81,20 @@ const updateHR = (id: string) => (input: {
   collection()
     .doc(id)
     .update({
-      ...input
+      ...input,
+      ...input.refillDate
+        ? {
+          refillDate: firestore.Timestamp.fromDate(new Date(input.refillDate))
+        }
+        : {},
+      ...input.medications
+        ? {
+          medications: input.medications.map(m => ({
+            ...m,
+            dosage: parseInt(m.dosage.toString())
+          }))
+        }
+        : {}
     })
     .then(docRef => {
       // console.log('Document written (mod) with ID: ', docRef)

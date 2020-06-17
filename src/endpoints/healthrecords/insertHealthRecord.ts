@@ -1,7 +1,7 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
 import { HRSchema } from '../../JoiSchema'
-import { insertHR, Medication, LabTestField } from "../../connections/healthrecords"
+import { insertHR, Medication, LabTestField, updateStatus } from "../../connections"
 
 const insertHealthRecord: EndPoint = {
   name: '/healthrecords/insert',
@@ -11,8 +11,19 @@ const insertHealthRecord: EndPoint = {
     userToken: Joi.string().required(),
     healthRecord: HRSchema.InsertSchema
   }),
-  method: ({ uid, healthRecord }: INPUT) =>
-    insertHR(healthRecord.type)({ medicalStaffId: uid, ...healthRecord })
+  method: ({ uid, healthRecord }: INPUT) => {
+    if (healthRecord.type === 'Medication Record')
+      return insertHR(healthRecord.type)({ medicalStaffId: uid, ...healthRecord })
+    else {
+      return updateStatus(healthRecord.appId)(uid, { status: 'Completed' })
+        .then(({ response }) => {
+          if (response.includes('success'))
+            return insertHR(healthRecord.type)({ medicalStaffId: uid, ...healthRecord })
+          else
+            throw new Error('Appointment not found')
+        })
+    }
+  }
 }
 
 type INPUT = {

@@ -1,0 +1,7 @@
+export { default as updateStatus } from './updateStatus'
+export { default as cancelAppointment } from './cancelAppointment'
+export { default as getAllAppointments } from './getAllAppointments'
+export { default as insertAppointment } from './insertAppointment'
+export { default as rescheduleAppointment } from './rescheduleAppointment'
+export { default as getPatientAppointments } from './getPatientAppointments'
+export { default as getTurn } from './getTurn'

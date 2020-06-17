@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
-import { updateU, User } from "../../connections/users"
+import { updateU } from "../../connections"
 import { UserSchema } from '../../JoiSchema'
 
 const updateUserDetail: EndPoint = {

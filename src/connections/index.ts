@@ -11,3 +11,4 @@ const db = admin.firestore(
 export default db
 export * from './users'
 export * from './healthrecords'
+export * from './appointments'

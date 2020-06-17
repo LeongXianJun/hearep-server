@@ -15,13 +15,16 @@ const insertHealthRecord: EndPoint = {
     if (healthRecord.type === 'Medication Record')
       return insertHR(healthRecord.type)({ medicalStaffId: uid, ...healthRecord })
     else {
-      return updateStatus(healthRecord.appId)(uid, { status: 'Completed' })
-        .then(({ response }) => {
-          if (response.includes('success'))
-            return insertHR(healthRecord.type)({ medicalStaffId: uid, ...healthRecord })
-          else
-            throw new Error('Appointment not found')
-        })
+      return Promise.all([
+        healthRecord.appId
+          ? updateStatus(healthRecord.appId)(uid, { status: 'Completed' })
+          : ({ response: 'success' })
+      ]).then(([ { response } ]) => {
+        if (response.includes('success'))
+          return insertHR(healthRecord.type)({ medicalStaffId: uid, ...healthRecord })
+        else
+          throw new Error('Appointment not found')
+      })
     }
   }
 }
@@ -34,7 +37,7 @@ type INPUT = {
   } & (
     {
       type: 'Health Prescription'
-      appId: string // appointment id
+      appId?: string // appointment id
       illness: string
       clinicalOpinion: string
     } | {

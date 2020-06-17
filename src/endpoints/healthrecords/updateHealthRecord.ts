@@ -1,7 +1,7 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
 import { HRSchema } from '../../JoiSchema'
-import { updateHR, LabTestField, Medication } from "../../connections/healthrecords"
+import { updateHR, LabTestField, Medication } from "../../connections"
 
 /**
  * If there is a new medication record, it will insert a new one, 

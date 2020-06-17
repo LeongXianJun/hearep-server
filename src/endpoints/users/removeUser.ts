@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
-import { deleteU } from "../../connections/users"
+import { deleteU } from "../../connections"
 
 const removeUserAcc: EndPoint = {
   name: '/user/delete',

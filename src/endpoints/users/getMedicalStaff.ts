@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
-import { getAllMS } from "../../connections/users"
+import { getAllMS } from "../../connections"
 
 const getMedicalStaff: EndPoint = {
   name: '/medicalStaff/all',

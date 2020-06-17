@@ -18,8 +18,8 @@ const InsertSchema = Joi.object().keys({
   type: Joi.string().valid('Health Prescription', 'Medication Record', 'Lab Test Result').required(),
   appId: Joi.when('type', {
     switch: [
-      { is: 'Health Prescription', then: Joi.string().required() },
-      { is: 'Lab Test Result', then: Joi.string().required() }
+      { is: 'Health Prescription', then: Joi.string() },
+      { is: 'Lab Test Result', then: Joi.string() }
     ],
     otherwise: Joi.forbidden()
   }),

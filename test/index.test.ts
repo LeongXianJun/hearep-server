@@ -139,7 +139,6 @@ describe('Health Record', () => {
         patientId: phoneId,
         date: new Date('1999-01-16'),
         type: 'Health Prescription',
-        appId: '123',
         illness: 'Coding non stop',
         clinicalOpinion: 'Take more rest and have a balance diet'
       }
@@ -203,7 +202,7 @@ describe('Health Record', () => {
     expect(result7[ 'Health Prescription' ][ 0 ][ 'medicationRecords' ][ 0 ][ 'medications' ]).toEqual([
       {
         medicine: 'Penicillin',
-        dosage: '10',
+        dosage: 10,
         usage: '1 every 6 hours after meal is taken',
       }
     ])
@@ -226,7 +225,6 @@ describe('Health Record', () => {
         patientId: phoneId,
         date: new Date(),
         type: 'Lab Test Result',
-        appId: 'abc123',
         title: 'Blood Test',
         comment: 'Quite Healthy',
         data: [
@@ -442,7 +440,7 @@ describe('Appointment (byTime)', () => {
     const { body: result9 } = await post('/healthrecords/patient', phoneId)
     expect(result9[ 'Health Prescription' ]).toHaveLength(1)
     expect(result9[ 'Health Prescription' ][ 0 ]).toHaveProperty('appId', rescheduleApp.id)
-  })
+  }, 6000)
 
   it('Schedule an overlapped Appointment', async () => {
     const { body: result1 } = await post('/appointment/insert', phoneId, {

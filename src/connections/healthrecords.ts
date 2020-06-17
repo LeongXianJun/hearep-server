@@ -45,7 +45,11 @@ const insertHR = (type: HR[ 'type' ]) => (input: {
       date: firestore.Timestamp.fromDate(new Date(input.date)),
       ...type === 'Health Prescription'
         ? {
-          appId: input.appId,
+          ...input.appId
+            ? {
+              appId: input.appId,
+            }
+            : {},
           illness: input.illness,
           clinicalOpinion: input.clinicalOpinion
         }
@@ -60,7 +64,11 @@ const insertHR = (type: HR[ 'type' ]) => (input: {
           }
           : type === 'Lab Test Result'
             ? {
-              appId: input.appId,
+              ...input.appId
+                ? {
+                  appId: input.appId,
+                }
+                : {},
               title: input.title,
               comment: input.comment,
               data: input.data

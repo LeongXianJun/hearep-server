@@ -247,7 +247,7 @@ export type Appointment = {
   id: string
   patientId: string
   medicalStaffId: string
-  date: Date
+  date: Date // doc creation time can be different from appointmetn scheduled date
   address: string // need because the doctor may transfer to another. Some may work in multiple location
 } & (
     {

@@ -600,7 +600,7 @@ describe('Appointment (byNumber)', () => {
   })
 })
 
-describe('Users cont.2', () => {
+describe('User cont.2', () => {
   it('Medical Staff Account Removal', async () => {
     // Remove the account
     const { body: result1 } = await put('/user/delete', emailId)
@@ -616,6 +616,19 @@ describe('Users cont.2', () => {
 
     const { body: result2 } = await post('/patient/all', emailId)
     expect(result2).toHaveProperty('errors', 'No more patient in the system yet')
+  })
+})
+
+describe('Access Log', () => {
+  test('check access logs', async () => {
+    const { body: result1 } = await post('/accessLogs/all', emailId)
+    expect(result1).toHaveLength(5)
+
+    const arr = result1 as Array<any>
+    arr.forEach(r => {
+      expect(r).toHaveProperty('target', phoneId)
+      expect(r).toHaveProperty('viewedBy', emailId)
+    })
   })
 })
 

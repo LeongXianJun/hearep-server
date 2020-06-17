@@ -12,7 +12,7 @@ const allAccessLogs = () =>
     .then(result => {
       return result.docs.map<FirebaseFirestore.DocumentData>(r => {
         const data = r.data()
-        return { ...data, date: r.createTime.toDate() }
+        return { id: r.id, ...data, viewedOn: r.createTime.toDate() }
       })
     }).then(datas => {
       if (datas.length > 0)
@@ -21,7 +21,7 @@ const allAccessLogs = () =>
         throw new Error('No more record in the system yet')
     })
 
-const insertAccessLog = (input: Log) =>
+const insertAccessLog = (input: { target: string, viewedBy: string }) =>
   collection()
     .add({
       ...input
@@ -35,6 +35,7 @@ const insertAccessLog = (input: Log) =>
     })
 
 export type Log = {
+  id: string
   target: string // id of the record owner
   viewedBy: string // id of the viewer
 }

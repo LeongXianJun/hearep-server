@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
-import { deleteHR } from "../../connections/healthrecords"
+import { deleteHR } from "../../connections"
 
 const deleteHealthRecord: EndPoint = {
   name: '/healthrecords/delete',

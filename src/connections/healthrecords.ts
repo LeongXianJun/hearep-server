@@ -140,7 +140,7 @@ export type HR = {
   id: string
   medicalStaffId: string
   patientId: string
-  date: Date
+  date: Date // doc creation date can be different from the record creation date
 } & (
     {
       type: 'Health Prescription'

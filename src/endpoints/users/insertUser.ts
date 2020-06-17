@@ -1,7 +1,7 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
-import { insertU, MedicalInstituition } from "../../connections"
 import { UserSchema } from '../../JoiSchema'
+import { insertU, MedicalInstituition } from "../../connections"
 
 const insertUser: EndPoint = {
   name: '/user/create',

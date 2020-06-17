@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
-import { getU } from "../../connections/users"
+import { getU } from "../../connections"
 
 const displayUser: EndPoint = {
   name: '/user/get',

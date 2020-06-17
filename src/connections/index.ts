@@ -12,3 +12,4 @@ export default db
 export * from './users'
 export * from './healthrecords'
 export * from './appointments'
+export * from './accessLogs'

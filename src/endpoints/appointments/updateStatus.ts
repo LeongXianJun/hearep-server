@@ -1,7 +1,7 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '..'
 import { AppointmentSchema } from '../../JoiSchema'
-import { updateStatus as updateS } from "../../connections/appointments"
+import { updateStatus as updateS } from "../../connections"
 
 const updateStatus: EndPoint = {
   name: '/appointment/update',

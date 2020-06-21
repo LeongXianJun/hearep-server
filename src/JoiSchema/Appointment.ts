@@ -15,14 +15,7 @@ const InsertSchema = Joi.object().keys({
 
 const UpdateSchema = Joi.object().keys({
   id: Joi.string().required(),
-  type: Joi.string().valid('byTime', 'byNumber').required(),
-  status: Joi.when('type', {
-    switch: [
-      { is: 'byTime', then: Joi.string().valid('Pending', 'Accepted', 'Rejected', 'Completed', 'Cancelled').required() },
-      { is: 'byNumber', then: Joi.string().valid('Waiting', 'Completed', 'Cancelled').required() }
-    ],
-    otherwise: Joi.forbidden()
-  })
+  status: Joi.string().valid('Accepted', 'Rejected').required()
 }).required()
 
 export default {

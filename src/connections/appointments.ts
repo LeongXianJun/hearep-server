@@ -67,34 +67,24 @@ const getAppointmentsByPatient = (uid: string) =>
         throw new Error('No more appointment in the system')
     })
 
-// for medical staff
-const getPatientAppointments = (uid: string, patientId: string) =>
+const getAnAppointment = (appId: string) =>
   collection()
-    .where('medicalStaffId', '==', uid)
-    .where('patientId', '==', patientId)
-    .where('status', 'in', [ 'Pending', 'Accepted', 'Rejected', 'Waiting', 'Completed', 'Cancelled' ])
+    .doc(appId)
     .get()
     .then(result => {
-      if (result.empty)
-        throw new Error('No patient\'s appointment in the system yet')
-      else {
-        return result.docs.map(r => {
-          const data = r.data()
-          return {
-            id: r.id, ...data, date: data.date.toDate(),
-            ...data.time
-              ? {
-                time: data.time.toDate()
-              }
-              : {}
-          }
-        })
-      }
-    }).then(datas => {
-      if (datas.length > 0)
-        return datas
-      else
-        throw new Error('No more patient\'s appointment in the system')
+      const data = result.data()
+      if (data) {
+        return {
+          id: result.id, ...data, date: data.date.toDate(),
+          status: data.status,
+          ...data.time
+            ? {
+              time: data.time.toDate()
+            }
+            : {}
+        }
+      } else
+        throw new Error('No appointment in the system yet')
     })
 
 const checkCrashedAppointment = async (medicalStaffId: string, time: Date) => {
@@ -156,8 +146,9 @@ const rescheduleAppointment = (oldId: string) => (type: Appointment[ 'type' ]) =
     cancelledBy: uid
   })
 
+  const newRef = collection().doc()
   // insert new app
-  batch.create(collection().doc(), {
+  batch.create(newRef, {
     type,
     patientId: uid,
     medicalStaffId: input.medicalStaffId,
@@ -179,7 +170,7 @@ const rescheduleAppointment = (oldId: string) => (type: Appointment[ 'type' ]) =
   return batch.commit()
     .then(docRef => {
       // console.log('Document written (mod) with ID: ', docRef)
-      return { response: 'Reschedule successfully' }
+      return { response: 'Reschedule successfully', docId: newRef.id }
     })
     .catch(err => {
       throw new Error('Error rescheduling document: ' + err)
@@ -264,7 +255,7 @@ export type Appointment = {
 export {
   getAppointmentsByMedicalStaff as getAppointmentsByMS,
   getAppointmentsByPatient as getAppointmentsByP,
-  getPatientAppointments,
+  getAnAppointment as getAppointment,
   insertAppointment as insertApp,
   rescheduleAppointment as rescheduleApp,
   updateStatus,

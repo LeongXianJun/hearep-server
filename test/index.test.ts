@@ -25,7 +25,7 @@ afterAll(async () => {
   /** 
    * remove all data in each testing collection
    */
-  await removeAll([ 'test_users', 'test_healthrecords', 'test_appointments' ])
+  await removeAll([ 'test_users', 'test_healthrecords', 'test_appointments', 'test_accesslogs' ])
     .then(() => batch.commit())
 })
 
@@ -217,7 +217,7 @@ describe('Health Record', () => {
       patientId: phoneId
     })
     expect(result9).toHaveProperty('errors', 'No more record in the system yet')
-  })
+  }, 6000)
 
   it('insert lab test', async () => {
     const { body: result1 } = await post('/healthrecords/insert', emailId, {
@@ -281,7 +281,7 @@ describe('Appointment (byTime)', () => {
   // have to run with the users test case
   it('Update Working Time', async () => {
     const { body: result1 } = await post('/workingTime/timeinterval', emailId)
-    expect(result1[ 'TimeInterval' ]).toHaveLength(10)
+    expect(result1).toHaveLength(10)
 
     const { body: result2 } = await put('/workingTime/update', emailId, {
       workingTime: {
@@ -356,7 +356,6 @@ describe('Appointment (byTime)', () => {
     const { body: result3 } = await put('/appointment/update', emailId, {
       appointment: {
         id: app.id,
-        type: app.type,
         status: 'Accepted'
       }
     })
@@ -417,7 +416,6 @@ describe('Appointment (byTime)', () => {
     const { body: result7 } = await put('/appointment/update', emailId, {
       appointment: {
         id: rescheduleApp.id,
-        type: rescheduleApp.type,
         status: 'Accepted'
       }
     })
@@ -439,7 +437,13 @@ describe('Appointment (byTime)', () => {
     // 9. Patient check the health prescription
     const { body: result9 } = await post('/healthrecords/patient', phoneId)
     expect(result9[ 'Health Prescription' ]).toHaveLength(1)
-    expect(result9[ 'Health Prescription' ][ 0 ]).toHaveProperty('appId', rescheduleApp.id)
+    const hp = result9[ 'Health Prescription' ][ 0 ]
+    expect(hp).toHaveProperty('appId', rescheduleApp.id)
+
+    const { body: result10 } = await post('/appointment/get', emailId, {
+      appId: hp.appId
+    })
+    expect(result10).toHaveProperty('id', rescheduleApp.id)
   }, 6000)
 
   it('Schedule an overlapped Appointment', async () => {

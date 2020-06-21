@@ -25,10 +25,15 @@ const getAvailableTimeslot: EndPoint = {
       return [ ...Array(7).keys() ]
         .map(i => ({
           day: new Date(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + i),
-          slots: wts.timeslots.find(slot => slot.day == i)?.slots.map(s => {
+          slots: wts.timeslots.find(slot => slot.day == (today.getDay() + i) % 7)?.slots.reduce<Date[]>((all, s) => {
             const t = TimeInterval[ s ]
-            return new Date(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + i, t.hr, t.min)
-          })
+            const slot = new Date(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + i, t.hr, t.min)
+
+            if (slot.getTime() > today.getTime())
+              return [ ...all, slot ]
+            else
+              return all
+          }, [])
         }))
         .reduce<{
           day: Date,
@@ -36,17 +41,10 @@ const getAvailableTimeslot: EndPoint = {
         }[]>((arr, wt) => {
           if (wt.slots) {
             return [ ...arr, {
-              ...wt, slots: [ ...wt.slots.filter(s => {
-                return occupiedSlots.every(at => {
-                  const t = at.time as Date
-                  return t.getMinutes() !== s.getMinutes() &&
-                    t.getHours() !== s.getHours() &&
-                    t.getDate() !== s.getDate() &&
-                    t.getMonth() !== s.getMonth() &&
-                    t.getFullYear() !== s.getFullYear()
-                })
-              }) ]
-            } ]
+              ...wt, slots: [ ...wt.slots.filter(s =>
+                occupiedSlots.every(at => (at.time as Date).getTime() - s.getTime() !== 0)
+              ) ]
+            } ].filter(wt => wt.slots.length > 0)
           } else {
             return [ ...arr ]
           }

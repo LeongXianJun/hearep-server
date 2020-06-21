@@ -19,15 +19,8 @@ type INPUT = {
   uid: string
   appointment: {
     id: string
-  } & (
-    {
-      type: 'byTime'
-      status: 'Pending' | 'Accepted' | 'Rejected' | 'Completed' | 'Cancelled'
-    } | {
-      type: 'byNumber'
-      status: 'Waiting' | 'Completed' | 'Cancelled'
-    }
-  )
+    status: 'Accepted' | 'Rejected'
+  }
 }
 
 export default updateStatus

@@ -10,9 +10,9 @@ const getTimeInterval: EndPoint = {
     userToken: Joi.string().required()
   }),
   method: ({ }: INPUT) =>
-    Promise.resolve({
-      TimeInterval: TimeInterval.map(({ hr, min }) => new Date(0, 0, 0, hr, min))
-    })
+    Promise.resolve([
+      ...TimeInterval.map(({ hr, min }) => new Date(0, 0, 0, hr, min))
+    ])
 }
 
 type INPUT = {

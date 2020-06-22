@@ -24,10 +24,10 @@ const getAvailableTimeslot: EndPoint = {
       const today = new Date(date)
       return [ ...Array(7).keys() ]
         .map(i => ({
-          day: new Date(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + i),
+          day: new Date(today.getFullYear(), today.getMonth(), today.getDate() + i),
           slots: wts.timeslots.find(slot => slot.day == (today.getDay() + i) % 7)?.slots.reduce<Date[]>((all, s) => {
             const t = TimeInterval[ s ]
-            const slot = new Date(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + i, t.hr, t.min)
+            const slot = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i, t.hr, t.min)
 
             if (slot.getTime() > today.getTime())
               return [ ...all, slot ]

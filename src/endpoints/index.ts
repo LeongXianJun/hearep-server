@@ -4,6 +4,7 @@ import { displayUser, getPatients, getMedicalStaff, insertUser, removeUser, upda
 import { getAllRecords, getAllPatientRecords, insertHealthRecord, removeHealthRecord, updateHealthRecord } from './healthrecords'
 import { cancelAppointment, getAllAppointments, getPatientAppointments, insertAppointment, rescheduleAppointment, updateStatus, getTurn, getAppointment } from './appointments'
 import { viewAllAccessLogs } from './accessLogs'
+import { getPerformanceAnalysis } from './performances'
 
 const endPoints: EndPoint[] = [
   cancelAppointment,
@@ -29,6 +30,7 @@ const endPoints: EndPoint[] = [
   getTimeInterval,
   getAvailableTimeslot,
   viewAllAccessLogs,
+  getPerformanceAnalysis,
   tryFunction
 ]
 

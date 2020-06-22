@@ -8,6 +8,8 @@ import { tryConnection } from '../src/connections/try'
 const emailId = '7CoiMZzrXYfB41ofBE7fdiZtSYB3' // represent medical staff
 const phoneId = '1XteR8apJhNFTCSseha075TCnFs2' // represent patient
 
+const today = new Date(2020, 5, 10)
+
 beforeAll(() => {
   // create testing collections with some data (optional)
 })
@@ -177,7 +179,7 @@ describe('Health Record', () => {
     const { body: result6 } = await post('/healthrecords/insert', emailId, {
       healthRecord: {
         patientId: phoneId,
-        date: new Date(),
+        date: today,
         type: 'Medication Record',
         prescriptionId: hpid,
         refillDate: new Date('2020-05-28'),
@@ -217,13 +219,13 @@ describe('Health Record', () => {
       patientId: phoneId
     })
     expect(result9).toHaveProperty('errors', 'No more record in the system yet')
-  }, 6000)
+  }, 10000)
 
   it('insert lab test', async () => {
     const { body: result1 } = await post('/healthrecords/insert', emailId, {
       healthRecord: {
         patientId: phoneId,
-        date: new Date(),
+        date: today,
         type: 'Lab Test Result',
         title: 'Blood Test',
         comment: 'Quite Healthy',
@@ -269,7 +271,7 @@ describe('Appointment (byTime)', () => {
     const { body: result1 } = await post('/appointment/insert', phoneId, {
       appointment: {
         medicalStaffId: emailId,
-        date: new Date(),
+        date: today,
         address: '666, Jalan UTAR, UTAR, Malaysia',
         type: 'byTime',
         time: new Date(2020, 6, 15, 13)
@@ -310,7 +312,7 @@ describe('Appointment (byTime)', () => {
     const { body: result1 } = await post('/appointment/insert', phoneId, {
       appointment: {
         medicalStaffId: emailId,
-        date: new Date(),
+        date: today,
         address: '666, Jalan UTAR, UTAR, Malaysia',
         type: 'byTime',
         time: new Date(2020, 6, 15, 10)
@@ -324,7 +326,7 @@ describe('Appointment (byTime)', () => {
     const { body: result1 } = await post('/appointment/insert', phoneId, {
       appointment: {
         medicalStaffId: emailId,
-        date: new Date(),
+        date: today,
         address: '666, Jalan UTAR, UTAR, Malaysia',
         type: 'byTime',
         time: new Date(2020, 6, 15, 13)
@@ -385,7 +387,7 @@ describe('Appointment (byTime)', () => {
       oldAppId: updatedApp.id,
       newApp: {
         medicalStaffId: updatedApp.medicalStaffId,
-        date: new Date(),
+        date: today,
         address: updatedApp.address,
         type: 'byTime',
         time: new Date(2020, 6, 15, 14)
@@ -425,7 +427,7 @@ describe('Appointment (byTime)', () => {
     const { body: result8 } = await post('/healthrecords/insert', emailId, {
       healthRecord: {
         patientId: phoneId,
-        date: new Date(),
+        date: today,
         type: 'Health Prescription',
         appId: rescheduleApp.id,
         illness: 'Coding non stop',
@@ -444,13 +446,13 @@ describe('Appointment (byTime)', () => {
       appId: hp.appId
     })
     expect(result10).toHaveProperty('id', rescheduleApp.id)
-  }, 6000)
+  }, 10000)
 
   it('Schedule an overlapped Appointment', async () => {
     const { body: result1 } = await post('/appointment/insert', phoneId, {
       appointment: {
         medicalStaffId: emailId,
-        date: new Date(),
+        date: today,
         address: '666, Jalan UTAR, UTAR, Malaysia',
         type: 'byTime',
         time: new Date(2020, 6, 15, 14)
@@ -623,8 +625,19 @@ describe('User cont.2', () => {
   })
 })
 
+describe('Performance Analysis', () => {
+  it('fetch performance analysis', async () => {
+    const { body: result1 } = await post('/analysis/get', emailId, {
+      date: today
+    })
+    expect(result1).toHaveProperty('NewApp')
+    expect(result1).toHaveProperty('HandledApp')
+    expect(result1).toHaveProperty('AverageWaitingTime')
+  })
+})
+
 describe('Access Log', () => {
-  test('check access logs', async () => {
+  it('check access logs', async () => {
     const { body: result1 } = await post('/accessLogs/all', emailId)
     expect(result1).toHaveLength(5)
 

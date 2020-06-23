@@ -10,7 +10,7 @@ const appCollection = () => db.collection(
 // appointment handled, new app, average consulation time, average waiting time
 const performance = (medicalStaffId: string, date: Date) => {
   const d = new Date(date)
-  const startTarget = firestore.Timestamp.fromMillis(d.getTime() - 7 * 24 * 360000)
+  const startTarget = firestore.Timestamp.fromMillis(d.getTime() - 7 * 24 * 3600000)
   const endTarget = firestore.Timestamp.fromDate(d)
 
   return Promise.all([
@@ -20,24 +20,20 @@ const performance = (medicalStaffId: string, date: Date) => {
       .where('date', '>=', startTarget)
       .where('date', '<=', endTarget)
       .get()
-      .then(result => {
-        if (result.empty)
-          throw new Error('No appointment in the system yet')
-        else {
-          return result.docs.map(r => {
-            const data = r.data()
-            return {
-              id: r.id, ...data, date: data.date.toDate(),
-              status: data.status, updatedOn: r.updateTime.toDate(), type: data.type,
-              ...data.time
-                ? {
-                  time: data.time.toDate()
-                }
-                : {}
-            }
-          })
-        }
-      }),
+      .then(result =>
+        result.docs.map(r => {
+          const data = r.data()
+          return {
+            id: r.id, ...data, date: data.date.toDate(),
+            status: data.status, updatedOn: r.updateTime.toDate(), type: data.type,
+            ...data.time
+              ? {
+                time: data.time.toDate()
+              }
+              : {}
+          }
+        })
+      ),
   ]).then(([ allApp ]) => ({ allApp }))
 }
 

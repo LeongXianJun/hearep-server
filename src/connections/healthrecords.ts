@@ -26,10 +26,10 @@ const allHR = (patientId: string) =>
         } else {
           return all
         }
-      }, [])
-    }).then(datas => {
-      if (datas.length > 0)
-        return datas
+      }, []).sort((a, b) => b.date.getTime() - a.date.getTime())
+    }).then(data => {
+      if (data.length > 0)
+        return data
       else
         throw new Error('No more record in the system yet')
     })

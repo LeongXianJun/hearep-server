@@ -21,13 +21,14 @@ afterAll(async () => {
       ...testCollections.map(tc => db.collection(tc).get())
     ])
       .then((allC) =>
-        allC.reduce<FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>[]>((a, col) => [ ...a, ...col.docs ], []).forEach(doc => batch.delete(doc.ref))
+        allC.reduce<FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>[]>((a, col) => [ ...a, ...col.docs ], [])
+          .forEach(doc => batch.delete(doc.ref))
       )
 
   /** 
    * remove all data in each testing collection
    */
-  await removeAll([ 'test_users', 'test_healthrecords', 'test_appointments', 'test_accesslogs' ])
+  await removeAll([ 'test_users', 'test_healthrecords', 'test_appointments', 'test_accesslogs', 'test_healthConditions' ])
     .then(() => batch.commit())
 })
 
@@ -622,6 +623,32 @@ describe('User cont.2', () => {
 
     const { body: result2 } = await post('/patient/all', emailId)
     expect(result2).toHaveProperty('errors', 'No more patient in the system yet')
+  })
+})
+
+describe('Health Condition', () => {
+  it('Update Health Condition', async () => {
+    const { body: result1 } = await post('/healthCondition/option', phoneId)
+    expect(result1).toEqual([ 'Blood Sugar Level', 'Blood Pressure Level', 'BMI' ])
+
+    const { body: result2 } = await post('/healthCondition/update', phoneId, {
+      healthCondition: {
+        date: today,
+        option: result1[ 0 ],
+        value: 100
+      }
+    })
+    expect(result2).toHaveProperty('response', 'Insert successfully')
+
+    const { body: result3 } = await post('/healthCondition/get', phoneId, {
+      date: today
+    })
+    expect(result3).toHaveProperty('Blood Sugar Level')
+    expect(result3[ 'Blood Sugar Level' ]).toHaveLength(7)
+    expect(result3).toHaveProperty('Blood Pressure Level')
+    expect(result3[ 'Blood Pressure Level' ]).toHaveLength(7)
+    expect(result3).toHaveProperty('BMI')
+    expect(result3[ 'BMI' ]).toHaveLength(7)
   })
 })
 

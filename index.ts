@@ -30,7 +30,8 @@ endPoints.forEach(({ name, type, schema, method }) => {
           .then(() => next())
           .catch(errors => res.json({ 'errors': errors.message }))
       }, (req: Request, res: Response, next: NextFunction) => {
-        console.log('Post:', name)
+        if (process.env.NODE_ENV !== 'test')
+          console.log('Post:', name)
         const { userToken, ...others } = req.body
         decode(userToken)
           .then(({ uid }) =>
@@ -47,7 +48,8 @@ endPoints.forEach(({ name, type, schema, method }) => {
           .then(() => next())
           .catch(errors => res.json({ 'errors': errors.message }))
       }, (req: Request, res: Response, next: NextFunction) => {
-        console.log('Put:', name)
+        if (process.env.NODE_ENV !== 'test')
+          console.log('Put:', name)
         const { userToken, ...others } = req.body
         decode(userToken)
           .then(({ uid }) =>

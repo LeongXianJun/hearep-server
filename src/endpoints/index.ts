@@ -4,6 +4,8 @@ import { displayUser, getPatients, getMedicalStaff, insertUser, removeUser, upda
 import { getAllRecords, getAllPatientRecords, insertHealthRecord, removeHealthRecord, updateHealthRecord } from './healthrecords'
 import { cancelAppointment, getAllAppointments, getPatientAppointments, insertAppointment, rescheduleAppointment, updateStatus, getTurn, getAppointment } from './appointments'
 import { viewAllAccessLogs } from './accessLogs'
+import { getPerformanceAnalysis } from './analysis'
+import { getConditionOptions, getHealthConditions, insertHealthCondition } from './healthConditions'
 
 const endPoints: EndPoint[] = [
   cancelAppointment,
@@ -14,11 +16,13 @@ const endPoints: EndPoint[] = [
   rescheduleAppointment,
   updateStatus,
   getTurn,
+
   getAllRecords,
   getAllPatientRecords,
   insertHealthRecord,
   removeHealthRecord,
   updateHealthRecord,
+
   displayUser,
   getPatients,
   getMedicalStaff,
@@ -28,7 +32,15 @@ const endPoints: EndPoint[] = [
   updateWorkingTime,
   getTimeInterval,
   getAvailableTimeslot,
+
+  getConditionOptions,
+  getHealthConditions,
+  insertHealthCondition,
+
   viewAllAccessLogs,
+
+  getPerformanceAnalysis,
+
   tryFunction
 ]
 

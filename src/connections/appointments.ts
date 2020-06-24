@@ -28,7 +28,7 @@ const getAppointmentsByMedicalStaff = (uid: string) =>
               }
               : {}
           }
-        })
+        }).sort((a, b) => b.date.getTime() - a.date.getTime())
       }
     }).then(data => {
       if (data.length > 0)
@@ -58,7 +58,7 @@ const getAppointmentsByPatient = (uid: string) =>
               }
               : {}
           }
-        })
+        }).sort((a, b) => b.date.getTime() - a.date.getTime())
       }
     }).then(data => {
       if (data.length > 0)

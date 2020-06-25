@@ -643,6 +643,8 @@ describe('Health Condition', () => {
     const { body: result3 } = await post('/healthCondition/get', phoneId, {
       date: today
     })
+    expect(result3).toHaveProperty('Sickness Frequency')
+    expect(result3[ 'Sickness Frequency' ]).toHaveLength(6)
     expect(result3).toHaveProperty('Blood Sugar Level')
     expect(result3[ 'Blood Sugar Level' ]).toHaveLength(7)
     expect(result3).toHaveProperty('Blood Pressure Level')

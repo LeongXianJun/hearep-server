@@ -34,6 +34,41 @@ const allHR = (patientId: string) =>
         throw new Error('No more record in the system yet')
     })
 
+const allHRwithin6Month = (patientId: string, date: Date) => {
+  const d = new Date(date)
+  const startTarget = firestore.Timestamp.fromDate(new Date(d.getFullYear(), d.getMonth() - 6))
+  const endTarget = firestore.Timestamp.fromDate(d)
+
+  return collection()
+    .where('patientId', '==', patientId)
+    .where('date', '>=', startTarget)
+    .where('date', '<=', endTarget)
+    .get()
+    .then(result => {
+      return result.docs.reduce<FirebaseFirestore.DocumentData[]>((all, r) => {
+        const data = r.data()
+        if (data.deleteAt === undefined) {
+          return [ ...all, {
+            id: r.id, ...data, date: data.date.toDate(),
+            ...data.refillDate
+              ? {
+                refillDate: data.refillDate.toDate()
+              }
+              : {}
+          } ]
+        } else {
+          return all
+        }
+      }, []).sort((a, b) => b.date.getTime() - a.date.getTime())
+    }).then(data => {
+      if (data.length > 0)
+        return data
+      else
+        throw new Error('No more record in the system yet')
+    })
+
+}
+
 const insertHR = (type: HR[ 'type' ]) => (input: {
   medicalStaffId: string, patientId: string, date: Date, appId?: string, illness?: string, clinicalOpinion?: string, prescriptionId?: string, refillDate?: Date, medications?: Medication[], title?: string, comment?: string, data?: LabTestField[]
 }) =>
@@ -175,6 +210,7 @@ export type LabTestField = {
 
 export {
   allHR,
+  allHRwithin6Month,
   insertHR,
   updateHR,
   deleteHR

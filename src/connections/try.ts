@@ -1,4 +1,4 @@
-import db from './'
+import { db } from './'
 
 const tryConnection = () =>
   db.collection('test_healthrecords')

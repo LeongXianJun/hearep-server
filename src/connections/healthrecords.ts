@@ -1,4 +1,4 @@
-import db from './'
+import { db } from './'
 import { firestore } from 'firebase-admin'
 
 const collection = () => db.collection(
@@ -66,8 +66,36 @@ const allHRwithin6Month = (patientId: string, date: Date) => {
       else
         throw new Error('No more record in the system yet')
     })
-
 }
+
+const allNonExpiredMedication = () =>
+  collection()
+    .where('type', '==', 'Medication Record')
+    .where('refillDate', '>=', firestore.Timestamp.now())
+    .get()
+    .then(result => {
+      return result.docs.reduce<FirebaseFirestore.DocumentData[]>((all, r) => {
+        const data = r.data()
+        if (data.deleteAt === undefined) {
+          return [ ...all, {
+            id: r.id, ...data, date: data.date.toDate(),
+            patientId: data.patientId, medicalStaffId: data.medicalStaffId,
+            ...data.refillDate
+              ? {
+                refillDate: data.refillDate.toDate()
+              }
+              : {}
+          } ]
+        } else {
+          return all
+        }
+      }, []).sort((a, b) => b.date.getTime() - a.date.getTime())
+    }).then(data => {
+      if (data.length > 0)
+        return data
+      else
+        throw new Error('No more record in the system yet')
+    })
 
 const insertHR = (type: HR[ 'type' ]) => (input: {
   medicalStaffId: string, patientId: string, date: Date, appId?: string, illness?: string, clinicalOpinion?: string, prescriptionId?: string, refillDate?: Date, medications?: Medication[], title?: string, comment?: string, data?: LabTestField[]
@@ -211,6 +239,7 @@ export type LabTestField = {
 export {
   allHR,
   allHRwithin6Month,
+  allNonExpiredMedication,
   insertHR,
   updateHR,
   deleteHR

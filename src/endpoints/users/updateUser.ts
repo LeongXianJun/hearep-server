@@ -6,7 +6,7 @@ import { UserSchema } from '../../JoiSchema'
 const updateUserDetail: EndPoint = {
   name: '/user/update',
   type: 'PUT',
-  description: 'To update a health record',
+  description: 'To update the user record',
   schema: Joi.object().keys({
     userToken: Joi.string().required(),
     user: UserSchema.UpdateSchema

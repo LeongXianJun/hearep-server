@@ -1,4 +1,4 @@
-import db from './'
+import { db } from './'
 import { firestore } from 'firebase-admin'
 
 const collection = () => db.collection(
@@ -18,7 +18,7 @@ const getUser = (uid: string) =>
           throw new Error('This account is removed.')
         } else {
           return {
-            id: result.id, ...user, dob: user.dob.toDate(),
+            id: result.id, ...user, dob: user.dob.toDate(), deviceToken: user.deviceToken,
             ...user.type === 'Medical Staff'
               ? {
                 ...user.workingTime?.type === 'byNumber'
@@ -42,6 +42,29 @@ const getUser = (uid: string) =>
       } else {
         throw new Error('No such user in the system')
       }
+    })
+
+const getAllDeviceToken = () =>
+  collection()
+    .get()
+    .then(result => {
+      if (result.empty)
+        throw new Error('No patient in the system yet')
+      else {
+        return result.docs.reduce<FirebaseFirestore.DocumentData[]>((all, r) => {
+          const data = r.data()
+          if (data.deleteAt === undefined) {
+            return [ ...all, { id: r.id, username: data.username, deviceToken: data.deviceToken, } ]
+          } else {
+            return all
+          }
+        }, [])
+      }
+    }).then(datas => {
+      if (datas.length > 0)
+        return datas
+      else
+        throw new Error('No more patient in the system yet')
     })
 
 const getAllPatients = () =>
@@ -188,6 +211,18 @@ const updateWorkingTime = (uid: string, input: { workingTime: WorkingTime }) =>
       throw new Error('Error updating document: ' + err)
     })
 
+const updateDeviceToken = (uid: string, deviceToken: string) =>
+  collection()
+    .doc(uid)
+    .update({ deviceToken })
+    .then(docRef => {
+      // console.log('Document written (mod) with ID: ', input.id)
+      return { response: 'Update successfully' }
+    })
+    .catch(err => {
+      throw new Error('Error updating document: ' + err)
+    })
+
 const deleteUser = (uid: string) =>
   collection()
     .doc(uid)
@@ -260,10 +295,12 @@ export type WorkingTime = {
 
 export {
   getUser as getU,
+  getAllDeviceToken,
   getAllPatients as getAllP,
   getAllMedicalStaff as getAllMS,
   insertUser as insertU,
   updateUser as updateU,
   updateWorkingTime as updateWT,
+  updateDeviceToken,
   deleteUser as deleteU
 }

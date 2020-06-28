@@ -1,6 +1,6 @@
 import admin from 'firebase-admin'
 
-import db from '../src/connections'
+import { db } from '../src/connections'
 import { get, post, put } from './supertest'
 import { tryConnection } from '../src/connections/try'
 
@@ -124,8 +124,14 @@ describe('User', () => {
     })
     expect(result3).toHaveProperty('response', 'Update successfully')
 
-    const { body: result4 } = await post('/user/get', emailId)
-    expect(result4).toHaveProperty('username', newName)
+    // update device token
+    const deviceToken = 'Mendy'
+    const { body: result4 } = await put('/user/device', emailId, { deviceToken })
+    expect(result4).toHaveProperty('response', 'Update successfully')
+
+    const { body: result5 } = await post('/user/get', emailId)
+    expect(result5).toHaveProperty('username', newName)
+    expect(result5).toHaveProperty('deviceToken', deviceToken)
   })
 
   it('get all of Patient Accounts', async () => {
@@ -640,7 +646,7 @@ describe('Health Condition', () => {
     })
     expect(result2).toHaveProperty('response', 'Insert successfully')
 
-    const { body: result3 } = await post('/healthCondition/get', phoneId, {
+    const { body: result3 } = await post('/analysis/patient', phoneId, {
       date: today
     })
     expect(result3).toHaveProperty('Sickness Frequency')

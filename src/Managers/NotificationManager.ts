@@ -7,6 +7,9 @@ const deviceTokens: Map<string, {
 }> = new Map()
 
 const timeOut = setTimeout(async () => {
+  if (process.env.NODE_ENV === 'test')
+    return
+
   // get the latest device token
   await getAllDeviceToken().then(result => {
     result.forEach(r => {

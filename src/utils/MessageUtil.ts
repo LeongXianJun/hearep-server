@@ -22,7 +22,12 @@ const sendMultipleDevices = (deviceToken: string[], data: { [ key: string ]: str
       console.log('Error sending message:', error)
     })
 
-export default {
-  sendMessages,
-  sendMultipleDevices
-}
+export default process.env.NODE_ENV === 'test'
+  ? {
+    sendMessages: () => { },
+    sendMultipleDevices: () => { }
+  }
+  : {
+    sendMessages,
+    sendMultipleDevices
+  }

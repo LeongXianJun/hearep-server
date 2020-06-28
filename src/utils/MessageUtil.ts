@@ -1,7 +1,7 @@
 import { messaging } from '../connections'
 
 const sendMessages = (data: { token: string, [ key: string ]: string }[]) =>
-  messaging.sendAll(data.map(({ token, ...other }) => ({ token, data: other })))
+  messaging.sendAll(data.map(({ token, ...other }) => ({ token, data: other, notification: { title: other.title, body: other.description }, android: { priority: 'high' }, apns: { payload: { aps: { contentAvailable: true } } } })))
     .then((response) => {
       console.log('Successfully sent message:', response.successCount, response.failureCount)
       if (response.failureCount > 0)
@@ -12,7 +12,7 @@ const sendMessages = (data: { token: string, [ key: string ]: string }[]) =>
     })
 
 const sendMultipleDevices = (deviceToken: string[], data: { [ key: string ]: string }) =>
-  messaging.sendMulticast({ data: data, tokens: deviceToken })
+  messaging.sendMulticast({ data: data, notification: { title: data.title, body: data.description }, tokens: deviceToken, android: { priority: 'high' }, apns: { payload: { aps: { contentAvailable: true } } } })
     .then((response) => {
       console.log('Successfully sent message:', response.successCount, response.failureCount)
       if (response.failureCount > 0)

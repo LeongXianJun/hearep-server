@@ -1,4 +1,4 @@
-import db from './'
+import { db } from './'
 import { firestore } from 'firebase-admin'
 
 const collection = () => db.collection(
@@ -6,6 +6,34 @@ const collection = () => db.collection(
     ? 'test_appointments'
     : 'appointments'
 )
+
+const getWaitingAppointments = () =>
+  collection()
+    .where('status', 'in', [ 'Accepted', 'Waiting', ])
+    .get()
+    .then(result => {
+      if (result.empty)
+        throw new Error('No appointment in the system yet')
+      else {
+        return result.docs.map(r => {
+          const data = r.data()
+          return {
+            id: r.id, ...data, date: data.date.toDate(), type: data.type,
+            status: data.status, patientId: data.patientId, medicalStaffId: data.medicalStaffId,
+            ...data.time
+              ? {
+                time: data.time.toDate()
+              }
+              : {}
+          }
+        }).sort((a, b) => b.date.getTime() - a.date.getTime())
+      }
+    }).then(data => {
+      if (data.length > 0)
+        return data
+      else
+        throw new Error('No more appointment in the system')
+    })
 
 // for medical staff
 const getAppointmentsByMedicalStaff = (uid: string) =>
@@ -253,6 +281,7 @@ export type Appointment = {
   )
 
 export {
+  getWaitingAppointments,
   getAppointmentsByMedicalStaff as getAppointmentsByMS,
   getAppointmentsByPatient as getAppointmentsByP,
   getAnAppointment as getAppointment,

@@ -6,10 +6,13 @@ import admin from 'firebase-admin'
 require('custom-env').env()
 
 import endPoints from './src/endpoints'
+import { NotificationManager } from './src/Managers'
 
 const PORT = process.env.PORT || 3000
-
 const app = express()
+const onClose = () => {
+  NotificationManager.offline()
+}
 
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -17,12 +20,6 @@ app.use(bodyParser.json())
 
 endPoints.forEach(({ name, type, schema, method }) => {
   switch (type) {
-    // case 'GET':
-    //   app.get(name, async (req: Request, res: Response, next: NextFunction) => {
-    //     console.log('Getting: ', name)
-    //     res.json(await method(req.body))
-    //   })
-    //   break
     case 'POST':
       app.post(name, (req: Request, res: Response, next: NextFunction) => {
         schema.required().options({ abortEarly: false })
@@ -59,12 +56,6 @@ endPoints.forEach(({ name, type, schema, method }) => {
           )
       })
       break
-    // case 'SET':
-    //   app.set(name, (req: Request, res: Response, next: NextFunction) => {
-    //     console.log('Setting: ', name)
-    //     res.json(method())
-    //   })
-    //   break
   }
 })
 
@@ -75,7 +66,7 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
 
 app.listen(PORT, () => {
   console.log(`API server ${process.env.Environment ? `in ${process.env.Environment} ` : ``}is listening on port ${PORT}`)
-})
+}).addListener('close', onClose)
 
 /**
  * @param token This will be the testing id rather than the firebase token

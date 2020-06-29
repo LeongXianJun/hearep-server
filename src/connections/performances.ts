@@ -1,4 +1,4 @@
-import db from './'
+import { db } from './'
 import { firestore } from 'firebase-admin'
 
 const appCollection = () => db.collection(

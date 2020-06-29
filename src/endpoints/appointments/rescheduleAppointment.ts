@@ -1,6 +1,8 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '..'
+import { MessageUtil } from '../../utils'
 import { AppointmentSchema } from '../../JoiSchema'
+import { NotificationManager } from '../../Managers'
 import { rescheduleApp, checkCrashedAppointment } from "../../connections"
 
 const rescheduleAppointment: EndPoint = {
@@ -24,10 +26,24 @@ const rescheduleAppointment: EndPoint = {
           }
         }).then(() =>
           rescheduleApp(oldAppId)(newApp.type)(uid, { ...newApp })
+            .then(response => {
+              const medicalStaffDT = NotificationManager.getDeviceToken(newApp.medicalStaffId)
+              if (medicalStaffDT) {
+                MessageUtil.sendMessages([ { token: medicalStaffDT.deviceToken, title: 'Rescheduled Appointment', description: 'A new appointment is rescheduled to ' + new Date(newApp.time).toString() } ])
+              }
+              return response
+            })
         )
         .catch(err => { throw new Error(err) })
     } else {
       return rescheduleApp(oldAppId)(newApp.type)(uid, { ...newApp })
+        .then(response => {
+          const patientDT = NotificationManager.getDeviceToken(newApp.medicalStaffId)
+          if (patientDT) {
+            MessageUtil.sendMessages([ { token: patientDT.deviceToken, title: 'Rescheduled Appointment', description: 'A new appointment is rescheduled' } ])
+          }
+          return response
+        })
     }
   }
 }

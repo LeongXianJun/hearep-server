@@ -2,13 +2,18 @@ import admin from 'firebase-admin'
 
 require('custom-env').env()
 
-const db = admin.firestore(
-  admin.initializeApp({
-    credential: admin.credential.cert({ ...process.env })
-  })
-)
+const app = admin.initializeApp({
+  credential: admin.credential.cert({ ...process.env })
+})
 
-export default db
+const db = admin.firestore(app)
+
+const messaging = admin.messaging(app)
+
+export {
+  db,
+  messaging
+}
 export * from './users'
 export * from './healthrecords'
 export * from './appointments'

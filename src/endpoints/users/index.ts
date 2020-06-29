@@ -4,5 +4,6 @@ export { default as getMedicalStaff } from './getMedicalStaff'
 export { default as insertUser } from './insertUser'
 export { default as removeUser } from './removeUser'
 export { default as updateUser } from './updateUser'
+export { default as updateDeviceToken } from './updateDeviceToken'
 
 export * from './workingTimes'

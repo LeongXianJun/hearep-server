@@ -51,6 +51,7 @@ const InsertSchema = Joi.object().keys({
 
 const UpdateSchema = Joi.object().keys({
   id: Joi.string().required(),
+  patientId: Joi.string().required(),
   type: Joi.string().valid('Health Prescription', 'Medication Record', 'Lab Test Result').required(),
   illness: Joi.when('type', {
     is: 'Health Prescription', then: Joi.string(), otherwise: Joi.forbidden()

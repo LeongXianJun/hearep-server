@@ -1,4 +1,4 @@
-import db from './'
+import { db } from './'
 
 const collection = () => db.collection(
   process.env.NODE_ENV === 'test'

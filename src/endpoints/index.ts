@@ -6,6 +6,7 @@ import { cancelAppointment, getAllAppointments, getPatientAppointments, insertAp
 import { viewAllAccessLogs } from './accessLogs'
 import { getPerformanceAnalysis, getPatientHealthAnalysis } from './analysis'
 import { getConditionOptions, insertHealthCondition } from './healthConditions'
+import { AccessRequest, RespondRequest } from './accessPermissions'
 
 const endPoints: EndPoint[] = [
   cancelAppointment,
@@ -44,6 +45,9 @@ const endPoints: EndPoint[] = [
 
   getPerformanceAnalysis,
   getPatientHealthAnalysis,
+
+  AccessRequest,
+  RespondRequest,
 
   tryFunction
 ]

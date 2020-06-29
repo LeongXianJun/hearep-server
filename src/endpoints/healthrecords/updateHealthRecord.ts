@@ -1,6 +1,8 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
+import { MessageUtil } from '../../utils'
 import { HRSchema } from '../../JoiSchema'
+import { NotificationManager } from '../../Managers'
 import { updateHR, LabTestField, Medication } from "../../connections"
 
 /**
@@ -17,11 +19,19 @@ const updateHealthRecord: EndPoint = {
   }),
   method: ({ healthRecord: { id, ...hr } }: INPUT) =>
     updateHR(id)({ ...hr })
+      .then(response => {
+        const patientDT = NotificationManager.getDeviceToken(hr.patientId)
+        if (patientDT) {
+          MessageUtil.sendMessages([ { token: patientDT.deviceToken, title: 'Health Record Update', description: 'The detaul of a health record is updated' } ])
+        }
+        return response
+      })
 }
 
 type INPUT = {
   healthRecord: {
     id: string
+    patientId: string
     illness?: string
     clinicalOpinion?: string
     refillDate?: Date,

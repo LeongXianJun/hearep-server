@@ -15,6 +15,7 @@ const InsertSchema = Joi.object().keys({
 
 const UpdateSchema = Joi.object().keys({
   id: Joi.string().required(),
+  patientId: Joi.string().required(),
   status: Joi.string().valid('Accepted', 'Rejected').required()
 }).required()
 

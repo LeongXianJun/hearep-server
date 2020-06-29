@@ -11,7 +11,7 @@ const sendMessages = (data: { token: string, [ key: string ]: string }[]) =>
       console.log('Error sending message:', error)
     })
 
-const sendMultipleDevices = (deviceToken: string[], data: { [ key: string ]: string }) =>
+const sendToMultipleDevices = (deviceToken: string[], data: { [ key: string ]: string }) =>
   messaging.sendMulticast({ data: data, notification: { title: data.title, body: data.description }, tokens: deviceToken, android: { priority: 'high' }, apns: { payload: { aps: { contentAvailable: true } } } })
     .then((response) => {
       console.log('Successfully sent message:', response.successCount, response.failureCount)
@@ -25,9 +25,9 @@ const sendMultipleDevices = (deviceToken: string[], data: { [ key: string ]: str
 export default process.env.NODE_ENV === 'test'
   ? {
     sendMessages: () => { },
-    sendMultipleDevices: () => { }
+    sendToMultipleDevices: () => { }
   }
   : {
     sendMessages,
-    sendMultipleDevices
+    sendToMultipleDevices: sendToMultipleDevices
   }

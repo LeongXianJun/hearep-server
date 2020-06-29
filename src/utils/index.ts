@@ -1,1 +1,1 @@
-export { default as MessageUitl } from './MessageUtil'
+export { default as MessageUtil } from './MessageUtil'

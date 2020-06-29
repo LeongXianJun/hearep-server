@@ -1,10 +1,21 @@
-import { MessageUitl } from '../utils'
+import { MessageUtil } from '../utils'
 import { getAllDeviceToken, getWaitingAppointments, allNonExpiredMedication } from '../connections'
 
 const deviceTokens: Map<string, {
   name: string,
   deviceToken: string
 }> = new Map()
+// get the latest device token
+getAllDeviceToken().then(result => {
+  result.forEach(r => {
+    if (r.deviceToken) {
+      deviceTokens.set(r.id, {
+        name: r.username,
+        deviceToken: r.deviceToken
+      })
+    }
+  })
+})
 
 const timeOut = setTimeout(async () => {
   if (process.env.NODE_ENV === 'test')
@@ -60,13 +71,17 @@ const timeOut = setTimeout(async () => {
   }, [])
 
 
-  MessageUitl.sendMessages([ ...appMessages, ...mrMessages ])
+  MessageUtil.sendMessages([ ...appMessages, ...mrMessages ])
 }, 3600000 * 12) // 12 hour
 
 const offline = () => {
   clearTimeout(timeOut)
 }
 
+const getDeviceToken = (id: string) =>
+  deviceTokens.get(id)
+
 export default {
-  offline
+  offline,
+  getDeviceToken
 }

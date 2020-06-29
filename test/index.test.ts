@@ -166,10 +166,10 @@ describe('Health Record', () => {
     expect(result3[ 'Health Prescription' ][ 0 ]).toHaveProperty('patientId', phoneId)
 
     // update the record
-    const { id: hpid, type, clinicalOpinion } = result2[ 'Health Prescription' ][ 0 ]
+    const { id: hpid, type, patientId, clinicalOpinion } = result2[ 'Health Prescription' ][ 0 ]
     const { body: result4 } = await put('/healthrecords/update', emailId, {
       healthRecord: {
-        id: hpid, type,
+        id: hpid, type, patientId,
         clinicalOpinion: clinicalOpinion + '\nDrink more water'
       }
     })
@@ -365,6 +365,7 @@ describe('Appointment (byTime)', () => {
     const { body: result3 } = await put('/appointment/update', emailId, {
       appointment: {
         id: app.id,
+        patientId: phoneId,
         status: 'Accepted'
       }
     })
@@ -425,6 +426,7 @@ describe('Appointment (byTime)', () => {
     const { body: result7 } = await put('/appointment/update', emailId, {
       appointment: {
         id: rescheduleApp.id,
+        patientId: phoneId,
         status: 'Accepted'
       }
     })
@@ -545,7 +547,8 @@ describe('Appointment (byNumber)', () => {
 
     // 5. Patient cancel the appointment
     const { body: result5 } = await put('/appointment/cancel', phoneId, {
-      appId: app.id
+      appId: app.id,
+      medicalStaffId: emailId,
     })
     expect(result5).toHaveProperty('response', 'Cancel successfully')
 

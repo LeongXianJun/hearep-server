@@ -6,16 +6,18 @@ const deviceTokens: Map<string, {
   deviceToken: string
 }> = new Map()
 // get the latest device token
-getAllDeviceToken().then(result => {
-  result.forEach(r => {
-    if (r.deviceToken) {
-      deviceTokens.set(r.id, {
-        name: r.username,
-        deviceToken: r.deviceToken
-      })
-    }
+if (process.env.NODE_ENV !== 'test') {
+  getAllDeviceToken().then(result => {
+    result.forEach(r => {
+      if (r.deviceToken) {
+        deviceTokens.set(r.id, {
+          name: r.username,
+          deviceToken: r.deviceToken
+        })
+      }
+    })
   })
-})
+}
 
 const timeOut = setTimeout(async () => {
   if (process.env.NODE_ENV === 'test')

@@ -284,6 +284,7 @@ export type User = {
       type: 'Patient'
       phoneNumber: string
       occupation?: string
+      authorizedUsers: string[]
     }
   )
 

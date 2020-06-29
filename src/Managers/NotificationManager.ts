@@ -1,39 +1,12 @@
 import { MessageUtil } from '../utils'
-import { getAllDeviceToken, getWaitingAppointments, allNonExpiredMedication } from '../connections'
-
-const deviceTokens: Map<string, {
-  name: string,
-  deviceToken: string
-}> = new Map()
-// get the latest device token
-if (process.env.NODE_ENV !== 'test') {
-  getAllDeviceToken().then(result => {
-    result.forEach(r => {
-      if (r.deviceToken) {
-        deviceTokens.set(r.id, {
-          name: r.username,
-          deviceToken: r.deviceToken
-        })
-      }
-    })
-  })
-}
+import { getWaitingAppointments, allNonExpiredMedication } from '../connections'
 
 const timeOut = setTimeout(async () => {
   if (process.env.NODE_ENV === 'test')
     return
 
-  // get the latest device token
-  await getAllDeviceToken().then(result => {
-    result.forEach(r => {
-      if (r.deviceToken) {
-        deviceTokens.set(r.id, {
-          name: r.username,
-          deviceToken: r.deviceToken
-        })
-      }
-    })
-  })
+  await MessageUtil.updateDeviceTokens()
+  const deviceTokens = MessageUtil.getAllDeviceTokens()
 
   const appointments = await getWaitingAppointments()
   const medicationRecords = await allNonExpiredMedication()
@@ -80,10 +53,6 @@ const offline = () => {
   clearTimeout(timeOut)
 }
 
-const getDeviceToken = (id: string) =>
-  deviceTokens.get(id)
-
 export default {
-  offline,
-  getDeviceToken
+  offline
 }

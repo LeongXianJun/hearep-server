@@ -5,7 +5,7 @@ require('custom-env').env()
 const app = admin.initializeApp({
   credential: admin.credential.cert({
     "projectId": process.env.projectId,
-    "privateKey": process.env.privateKey?.replace(/\\n/g, '\n'),
+    "privateKey": process.env.privateKey,
     "clientEmail": process.env.clientEmail,
   })
 })

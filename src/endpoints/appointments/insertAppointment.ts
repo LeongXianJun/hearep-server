@@ -2,7 +2,6 @@ import Joi from '@hapi/joi'
 import { EndPoint } from '..'
 import { MessageUtil } from '../../utils'
 import { AppointmentSchema } from '../../JoiSchema'
-import { NotificationManager } from '../../Managers'
 import { insertApp, checkCrashedAppointment, getTurn, getU, WorkingTime, TimeInterval } from "../../connections"
 
 const insertAppointment: EndPoint = {
@@ -33,7 +32,7 @@ const insertAppointment: EndPoint = {
                 if (result) {
                   return insertApp(appointment.type)(uid, { ...appointment })
                     .then(response => {
-                      const patientDT = NotificationManager.getDeviceToken(appointment.medicalStaffId)
+                      const patientDT = MessageUtil.getDeviceToken(appointment.medicalStaffId)
                       if (patientDT) {
                         MessageUtil.sendMessages([ { token: patientDT.deviceToken, title: 'New Appointment', description: 'A new appointment is scheduled on ' + t.toString() } ])
                       }
@@ -61,7 +60,7 @@ const insertAppointment: EndPoint = {
                   if (turn == appointment.turn)
                     return insertApp(appointment.type)(uid, { ...appointment })
                       .then(response => {
-                        const medicalStaffDT = NotificationManager.getDeviceToken(appointment.medicalStaffId)
+                        const medicalStaffDT = MessageUtil.getDeviceToken(appointment.medicalStaffId)
                         if (medicalStaffDT) {
                           MessageUtil.sendMessages([ { token: medicalStaffDT.deviceToken, title: 'New Appointment', description: 'A new appointment is scheduled' } ])
                         }

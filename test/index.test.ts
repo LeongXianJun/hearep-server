@@ -616,25 +616,6 @@ describe('Appointment (byNumber)', () => {
   })
 })
 
-describe('User cont.2', () => {
-  it('Medical Staff Account Removal', async () => {
-    // Remove the account
-    const { body: result1 } = await put('/user/delete', emailId)
-    expect(result1).toHaveProperty('response', 'Delete successfully')
-
-    const { body: result2 } = await post('/user/get', emailId)
-    expect(result2).toHaveProperty('errors', 'This account is removed.')
-  })
-
-  it('remove the last patient account', async () => {
-    const { body: result1 } = await put('/user/delete', phoneId)
-    expect(result1).toHaveProperty('response', 'Delete successfully')
-
-    const { body: result2 } = await post('/patient/all', emailId)
-    expect(result2).toHaveProperty('errors', 'No more patient in the system yet')
-  })
-})
-
 describe('Health Condition', () => {
   it('Update Health Condition', async () => {
     const { body: result1 } = await post('/healthCondition/option', phoneId)
@@ -663,6 +644,58 @@ describe('Health Condition', () => {
   })
 })
 
+describe('Authorized Users', () => {
+  it('Update and Remove Authorized User', async () => {
+    // 0. create a new patient account
+    const newTempId = '123123123'
+    const { body: result0 } = await post('/user/create', newTempId, {
+      user: {
+        username: '312',
+        dob: new Date('1990-06-30'),
+        gender: 'M',
+        email: '312@gmail.com',
+        type: 'Patient',
+        phoneNumber: '+60165663878',
+        occupation: 'Student'
+      }
+    })
+    expect(result0).toHaveProperty('response', 'Insert successfully')
+
+    // 1. get all of the patients
+    const { body: result1 } = await post('/patient/all', phoneId)
+    expect(result1).toHaveLength(2)
+
+    // 2. update the authorized users list
+    const input = (result1 as Array<any>).filter(r => r.id !== phoneId).map(r => r.id)
+    console.log('input', input)
+    const { body: result2 } = await put('/user/authorized/update', phoneId, {
+      userIds: [
+        ...input
+      ]
+    })
+    expect(result2).toHaveProperty('response', 'Update successfully')
+
+    // 3. check the authorized list of the patient
+    const { body: result3 } = await post('/user/get', phoneId)
+    expect(result3).toHaveProperty('authorizedUsers')
+    expect(result3[ 'authorizedUsers' ]).toHaveLength(1)
+    expect(result3[ 'authorizedUsers' ]).toContain(newTempId)
+
+    // 4. remove authorized users from the list
+    const { body: result4 } = await put('/user/authorized/remove', phoneId, {
+      userIds: [
+        ...input
+      ]
+    })
+    expect(result4).toHaveProperty('response', 'Update successfully')
+
+    // 5. check the authorized list of the patient
+    const { body: result5 } = await post('/user/get', phoneId)
+    expect(result5).toHaveProperty('authorizedUsers')
+    expect(result5[ 'authorizedUsers' ]).toHaveLength(0)
+  })
+})
+
 describe('Performance Analysis', () => {
   it('fetch performance analysis', async () => {
     const { body: result1 } = await post('/analysis/get', emailId, {
@@ -684,6 +717,25 @@ describe('Access Log', () => {
       expect(r).toHaveProperty('target', phoneId)
       expect(r).toHaveProperty('viewedBy', emailId)
     })
+  })
+})
+
+describe('User cont.2', () => {
+  it('Medical Staff Account Removal', async () => {
+    // Remove the account
+    const { body: result1 } = await put('/user/delete', emailId)
+    expect(result1).toHaveProperty('response', 'Delete successfully')
+
+    const { body: result2 } = await post('/user/get', emailId)
+    expect(result2).toHaveProperty('errors', 'This account is removed.')
+  })
+
+  it('remove the last patient account', async () => {
+    const { body: result1 } = await put('/user/delete', phoneId)
+    expect(result1).toHaveProperty('response', 'Delete successfully')
+
+    const { body: result2 } = await post('/patient/all', emailId)
+    expect(result2).toHaveProperty('errors', 'No more patient in the system yet')
   })
 })
 

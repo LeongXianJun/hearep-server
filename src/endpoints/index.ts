@@ -1,11 +1,12 @@
 import Joi from '@hapi/joi'
 import tryFunction from './try'
-import { displayUser, getPatients, getMedicalStaff, insertUser, removeUser, updateUser, updateWorkingTime, getTimeInterval, getAvailableTimeslot, updateDeviceToken } from './users'
+import { displayUser, getPatients, getMedicalStaff, insertUser, removeUser, updateUser, updateWorkingTime, getTimeInterval, getAvailableTimeslot, updateDeviceToken, updateAuthorizedUsers, removeAuthorizedUsers } from './users'
 import { getAllRecords, getAllPatientRecords, insertHealthRecord, removeHealthRecord, updateHealthRecord } from './healthrecords'
 import { cancelAppointment, getAllAppointments, getPatientAppointments, insertAppointment, rescheduleAppointment, updateStatus, getTurn, getAppointment } from './appointments'
 import { viewAllAccessLogs } from './accessLogs'
 import { getPerformanceAnalysis, getPatientHealthAnalysis } from './analysis'
 import { getConditionOptions, insertHealthCondition } from './healthConditions'
+import { AccessRequest, RespondRequest } from './accessPermissions'
 
 const endPoints: EndPoint[] = [
   cancelAppointment,
@@ -30,6 +31,9 @@ const endPoints: EndPoint[] = [
   removeUser,
   updateUser,
   updateDeviceToken,
+  updateAuthorizedUsers,
+  removeAuthorizedUsers,
+
   updateWorkingTime,
   getTimeInterval,
   getAvailableTimeslot,
@@ -41,6 +45,9 @@ const endPoints: EndPoint[] = [
 
   getPerformanceAnalysis,
   getPatientHealthAnalysis,
+
+  AccessRequest,
+  RespondRequest,
 
   tryFunction
 ]

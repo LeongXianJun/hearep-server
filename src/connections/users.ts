@@ -36,7 +36,9 @@ const getUser = (uid: string) =>
                   }
                   : {}
               }
-              : {}
+              : {
+                authorizedUsers: user.authorizedUsers
+              }
           }
         }
       } else {
@@ -223,6 +225,36 @@ const updateDeviceToken = (uid: string, deviceToken: string) =>
       throw new Error('Error updating document: ' + err)
     })
 
+// update authorized used list
+const updateAuthorizedUsers = (uid: string, userIds: string[]) =>
+  collection()
+    .doc(uid)
+    .update({
+      authorizedUsers: firestore.FieldValue.arrayUnion(...userIds)
+    })
+    .then(docRef => {
+      // console.log('Document written (mod) with ID: ', input.id)
+      return { response: 'Update successfully' }
+    })
+    .catch(err => {
+      throw new Error('Error updating document: ' + err)
+    })
+
+// remove authorized used list
+const removeAuthorizedUsers = (uid: string, userIds: string[]) =>
+  collection()
+    .doc(uid)
+    .update({
+      authorizedUsers: firestore.FieldValue.arrayRemove(...userIds)
+    })
+    .then(docRef => {
+      // console.log('Document written (mod) with ID: ', input.id)
+      return { response: 'Update successfully' }
+    })
+    .catch(err => {
+      throw new Error('Error updating document: ' + err)
+    })
+
 const deleteUser = (uid: string) =>
   collection()
     .doc(uid)
@@ -252,6 +284,7 @@ export type User = {
       type: 'Patient'
       phoneNumber: string
       occupation?: string
+      authorizedUsers: string[]
     }
   )
 
@@ -302,5 +335,7 @@ export {
   updateUser as updateU,
   updateWorkingTime as updateWT,
   updateDeviceToken,
+  updateAuthorizedUsers,
+  removeAuthorizedUsers,
   deleteUser as deleteU
 }

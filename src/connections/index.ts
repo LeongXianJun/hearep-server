@@ -3,7 +3,11 @@ import admin from 'firebase-admin'
 require('custom-env').env()
 
 const app = admin.initializeApp({
-  credential: admin.credential.cert({ ...process.env })
+  credential: admin.credential.cert({
+    "projectId": process.env.projectId,
+    "privateKey": process.env.privateKey?.replace(/\\n/g, '\n'),
+    "clientEmail": process.env.clientEmail,
+  })
 })
 
 const db = admin.firestore(app)

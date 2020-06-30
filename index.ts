@@ -25,7 +25,7 @@ endPoints.forEach(({ name, type, schema, method }) => {
         schema.required().options({ abortEarly: false })
           .validateAsync(req.body)
           .then(() => next())
-          .catch(errors => res.json({ 'errors': errors.message }))
+          .catch((errors: Error) => res.json({ 'errors': errors.message }))
       }, (req: Request, res: Response, next: NextFunction) => {
         if (process.env.NODE_ENV !== 'test')
           console.log('Post:', name)
@@ -34,7 +34,7 @@ endPoints.forEach(({ name, type, schema, method }) => {
           .then(({ uid }) =>
             method({ uid, ...others })
               .then(result => res.json(result))
-              .catch(errors => res.json({ 'errors': errors.message }))
+              .catch((errors: Error) => res.json({ 'errors': errors.message }))
           )
       })
       break
@@ -43,7 +43,7 @@ endPoints.forEach(({ name, type, schema, method }) => {
         schema.required().options({ abortEarly: false })
           .validateAsync(req.body)
           .then(() => next())
-          .catch(errors => res.json({ 'errors': errors.message }))
+          .catch((errors: Error) => res.json({ 'errors': errors.message }))
       }, (req: Request, res: Response, next: NextFunction) => {
         if (process.env.NODE_ENV !== 'test')
           console.log('Put:', name)
@@ -52,7 +52,7 @@ endPoints.forEach(({ name, type, schema, method }) => {
           .then(({ uid }) =>
             method({ uid, ...others })
               .then(result => res.json(result))
-              .catch(errors => res.json({ 'errors': errors.message }))
+              .catch((errors: Error) => res.json({ 'errors': errors.message }))
           )
       })
       break

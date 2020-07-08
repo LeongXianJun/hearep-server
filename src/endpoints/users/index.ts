@@ -7,5 +7,6 @@ export { default as updateUser } from './updateUser'
 export { default as updateDeviceToken } from './updateDeviceToken'
 export { default as updateAuthorizedUsers } from './updateAuthorizedUsers'
 export { default as removeAuthorizedUsers } from './removeAuthorizedUsers'
+export { default as hasUserwithPhoneNumber } from './hasUserwithPhoneNumber'
 
 export * from './workingTimes'

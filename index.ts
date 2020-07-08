@@ -18,7 +18,7 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
-endPoints.forEach(({ name, type, schema, method }) => {
+endPoints.forEach(({ name, type, schema, method, skipToken }) => {
   switch (type) {
     case 'POST':
       app.post(name, (req: Request, res: Response, next: NextFunction) => {
@@ -30,7 +30,7 @@ endPoints.forEach(({ name, type, schema, method }) => {
         if (process.env.NODE_ENV !== 'test')
           console.log('Post:', name)
         const { userToken, ...others } = req.body
-        decode(userToken)
+        decode(userToken, skipToken)
           .then(({ uid }) =>
             method({ uid, ...others })
               .then(result => res.json(result))
@@ -48,7 +48,7 @@ endPoints.forEach(({ name, type, schema, method }) => {
         if (process.env.NODE_ENV !== 'test')
           console.log('Put:', name)
         const { userToken, ...others } = req.body
-        decode(userToken)
+        decode(userToken, skipToken)
           .then(({ uid }) =>
             method({ uid, ...others })
               .then(result => res.json(result))
@@ -71,8 +71,8 @@ app.listen(PORT, () => {
 /**
  * @param token This will be the testing id rather than the firebase token
  */
-const decode = (token: string) => {
-  if (process.env.NODE_ENV === 'test') {
+const decode = (token: string, skipToken: boolean = false) => {
+  if (skipToken || process.env.NODE_ENV === 'test') {
     return Promise.resolve({ uid: token })
   } else {
     return admin.auth().verifyIdToken(token)

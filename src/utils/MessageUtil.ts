@@ -11,14 +11,17 @@ const getAllDeviceTokens = () =>
 const getDeviceToken = (id: string) =>
   deviceTokens.get(id)
 
+const updateToken = (userId: string, deviceToken: string, username?: string) =>
+  deviceTokens.set(userId, {
+    name: username ?? '',
+    deviceToken: deviceToken
+  })
+
 const updateDeviceTokens = () =>
   getAllDeviceToken().then(result => {
     result.forEach(r => {
       if (r.deviceToken) {
-        deviceTokens.set(r.id, {
-          name: r.username,
-          deviceToken: r.deviceToken
-        })
+        updateToken(r.id, r.deviceToken, r.username)
       }
     })
   })
@@ -54,6 +57,7 @@ export default process.env.NODE_ENV === 'test'
   ? {
     getAllDeviceTokens,
     getDeviceToken,
+    updateToken: () => { },
     updateDeviceTokens: () => Promise.resolve(),
     sendMessages: () => Promise.resolve(),
     sendToMultipleDevices: () => Promise.resolve()
@@ -61,6 +65,7 @@ export default process.env.NODE_ENV === 'test'
   : {
     getAllDeviceTokens,
     getDeviceToken,
+    updateToken,
     updateDeviceTokens,
     sendMessages,
     sendToMultipleDevices: sendToMultipleDevices

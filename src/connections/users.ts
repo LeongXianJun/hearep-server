@@ -7,6 +7,13 @@ const collection = () => db.collection(
     : 'users'
 )
 
+const containUser = (phoneNumber: string) =>
+  collection()
+    .where('type', '==', 'Patient')
+    .where('phoneNumber', '==', phoneNumber)
+    .get()
+    .then(result => !result.empty)
+
 const getUser = (uid: string) =>
   collection()
     .doc(uid)
@@ -188,14 +195,14 @@ const updateWorkingTime = (uid: string, input: { workingTime: WorkingTime }) =>
         ...input.workingTime,
         ...input.workingTime.type === 'byTime'
           ? {
-            timeslots: input.workingTime.timeslots.map(ts => ({
+            timeslots: (input.workingTime.timeslots ?? []).map(ts => ({
               ...ts, slots: ts.slots.map(s => parseInt(s.toString()))
             }))
           }
           : input.workingTime.type === 'byNumber'
             ? {
               timeslots: [
-                ...input.workingTime.timeslots.map(ts => ({
+                ...(input.workingTime.timeslots ?? []).map(ts => ({
                   ...ts,
                   startTime: firestore.Timestamp.fromDate(new Date(ts.startTime)),
                   endTime: firestore.Timestamp.fromDate(new Date(ts.endTime))
@@ -327,6 +334,7 @@ export type WorkingTime = {
 }
 
 export {
+  containUser,
   getUser as getU,
   getAllDeviceToken,
   getAllPatients as getAllP,

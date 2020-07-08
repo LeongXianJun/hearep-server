@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi'
 import tryFunction from './try'
-import { displayUser, getPatients, getMedicalStaff, insertUser, removeUser, updateUser, updateWorkingTime, getTimeInterval, getAvailableTimeslot, updateDeviceToken, updateAuthorizedUsers, removeAuthorizedUsers } from './users'
+import { displayUser, getPatients, getMedicalStaff, insertUser, removeUser, updateUser, updateWorkingTime, getTimeInterval, getAvailableTimeslot, updateDeviceToken, updateAuthorizedUsers, removeAuthorizedUsers, hasUserwithPhoneNumber } from './users'
 import { getAllRecords, getAllPatientRecords, insertHealthRecord, removeHealthRecord, updateHealthRecord } from './healthrecords'
 import { cancelAppointment, getAllAppointments, getPatientAppointments, insertAppointment, rescheduleAppointment, updateStatus, getTurn, getAppointment } from './appointments'
 import { viewAllAccessLogs } from './accessLogs'
@@ -33,6 +33,7 @@ const endPoints: EndPoint[] = [
   updateDeviceToken,
   updateAuthorizedUsers,
   removeAuthorizedUsers,
+  hasUserwithPhoneNumber,
 
   updateWorkingTime,
   getTimeInterval,
@@ -59,6 +60,7 @@ const endPoints: EndPoint[] = [
 export interface EndPoint {
   name: string
   type: 'POST' | 'PUT'
+  skipToken?: boolean
   description: string
   schema: Joi.ObjectSchema
   method: (data?: any) => Promise<any>

@@ -15,8 +15,8 @@ const Schema = Joi.object().keys({
   type: Joi.string().valid('byTime', 'byNumber').required(),
   timeslots: Joi.when('type', {
     switch: [
-      { is: 'byTime', then: Joi.array().items(ByTimeSchema).required() },
-      { is: 'byNumber', then: Joi.array().items(ByNumberSchema).required() },
+      { is: 'byTime', then: Joi.array().items(ByTimeSchema) },
+      { is: 'byNumber', then: Joi.array().items(ByNumberSchema) },
     ],
     otherwise: Joi.forbidden()
   })

@@ -5,8 +5,8 @@ import { get, post, put } from './supertest'
 import { tryConnection } from '../src/connections/try'
 
 // for testing, tid is assigned so token is not needed
-const emailId = '7CoiMZzrXYfB41ofBE7fdiZtSYB3' // represent medical staff
-const phoneId = '1XteR8apJhNFTCSseha075TCnFs2' // represent patient
+const emailId = 'i30oH4A0IiYDPWwGndJlRQnx8RD2' // represent medical staff
+const phoneId = 'X5A5wUfAkRgRvF9kgToP01a2i3p1' // represent patient
 
 const today = new Date(2020, 5, 10)
 
@@ -667,7 +667,6 @@ describe('Authorized Users', () => {
 
     // 2. update the authorized users list
     const input = (result1 as Array<any>).filter(r => r.id !== phoneId).map(r => r.id)
-    console.log('input', input)
     const { body: result2 } = await put('/user/authorized/update', phoneId, {
       userIds: [
         ...input

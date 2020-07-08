@@ -1,7 +1,7 @@
 import { MessageUtil } from '../utils'
 import { getWaitingAppointments, allNonExpiredMedication } from '../connections'
 
-const timeOut = setTimeout(async () => {
+const timeOut = setInterval(async () => {
   if (process.env.NODE_ENV === 'test')
     return
 
@@ -50,7 +50,7 @@ const timeOut = setTimeout(async () => {
 }, 3600000 * 12) // 12 hour
 
 const offline = () => {
-  clearTimeout(timeOut)
+  clearInterval(timeOut)
 }
 
 export default {

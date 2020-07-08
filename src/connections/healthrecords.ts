@@ -60,11 +60,6 @@ const allHRwithin6Month = (patientId: string, date: Date) => {
           return all
         }
       }, []).sort((a, b) => b.date.getTime() - a.date.getTime())
-    }).then(data => {
-      if (data.length > 0)
-        return data
-      else
-        throw new Error('No more record in the system yet')
     })
 }
 

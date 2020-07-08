@@ -18,24 +18,28 @@ const getAppointmentTurn: EndPoint = {
       getTurn(medicalStaffId, date)
     ]).then(([ medicalStaff, { turn } ]) => {
       const wts: WorkingTime = (medicalStaff as any).workingTime
-      if (wts.type === 'byNumber') {
-        const t = new Date(date)
-        const slot = wts.timeslots.find(ts => ts.day == t.getDay())
-        if (slot) {
-          const { startTime, endTime } = slot
-          const startTimestamp = startTime.getHours() * 60 + startTime.getMinutes(),
-            endTimestamp = endTime.getHours() * 60 + endTime.getMinutes(),
-            currentTimestamp = t.getHours() * 60 + t.getMinutes()
-          if (startTimestamp <= currentTimestamp && currentTimestamp <= endTimestamp) {
-            return { ...slot, turn }
+      if (wts) {
+        if (wts.type === 'byNumber') {
+          const t = new Date(date)
+          const slot = wts.timeslots.find(ts => ts.day == t.getDay())
+          if (slot) {
+            const { startTime, endTime } = slot
+            const startTimestamp = startTime.getHours() * 60 + startTime.getMinutes(),
+              endTimestamp = endTime.getHours() * 60 + endTime.getMinutes(),
+              currentTimestamp = t.getHours() * 60 + t.getMinutes()
+            if (startTimestamp <= currentTimestamp && currentTimestamp <= endTimestamp) {
+              return { ...slot, turn }
+            } else {
+              throw new Error('This medical staff does not operate during this working hour')
+            }
           } else {
-            throw new Error('This medical staff does not operate during this working hour')
+            throw new Error('This medical staff does not operate on this day')
           }
         } else {
-          throw new Error('This medical staff does not operate on this day')
+          throw new Error('Medical Staff does not offer this service yet')
         }
       } else {
-        throw new Error('Medical Staff does not offer this service yet')
+        throw new Error('Working Time is not set.')
       }
     })
 }

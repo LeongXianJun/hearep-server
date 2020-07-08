@@ -1,5 +1,6 @@
 import Joi from '@hapi/joi'
 import { EndPoint } from '../'
+import { MessageUtil } from '../../utils'
 import { updateDeviceToken as updateDT } from '../../connections'
 
 const updateDeviceToken: EndPoint = {
@@ -12,6 +13,10 @@ const updateDeviceToken: EndPoint = {
   }),
   method: ({ uid, deviceToken }: INPUT) =>
     updateDT(uid, deviceToken)
+      .then(response => {
+        MessageUtil.updateToken(uid, deviceToken)
+        return response
+      })
 }
 
 type INPUT = {

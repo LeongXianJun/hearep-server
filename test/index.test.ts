@@ -733,8 +733,11 @@ describe('User cont.2', () => {
     const { body: result1 } = await put('/user/delete', phoneId)
     expect(result1).toHaveProperty('response', 'Delete successfully')
 
-    const { body: result2 } = await post('/patient/all', emailId)
-    expect(result2).toHaveProperty('errors', 'No more patient in the system yet')
+    const { body: result2 } = await put('/user/delete', '123123123')
+    expect(result2).toHaveProperty('response', 'Delete successfully')
+
+    const { body: result3 } = await post('/patient/all', emailId)
+    expect(result3).toHaveProperty('errors', 'No more patient in the system yet')
   })
 })
 

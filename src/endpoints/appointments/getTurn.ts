@@ -5,7 +5,7 @@ import { getTurn, getU, WorkingTime } from "../../connections"
 const getAppointmentTurn: EndPoint = {
   name: '/appointment/turn',
   type: 'POST',
-  description: 'To the current number for byNumber appointment',
+  description: 'To get the current number for byNumber appointment',
   schema: Joi.object().keys({
     userToken: Joi.string().required(),
     medicalStaffId: Joi.string().required(),

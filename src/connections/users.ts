@@ -232,6 +232,18 @@ const updateDeviceToken = (uid: string, deviceToken: string) =>
       throw new Error('Error updating document: ' + err)
     })
 
+const removeDeviceToken = (uid: string) =>
+  collection()
+    .doc(uid)
+    .update({ deviceToken: firestore.FieldValue.delete() })
+    .then(docRef => {
+      // console.log('Document written (mod) with ID: ', input.id)
+      return { response: 'Update successfully' }
+    })
+    .catch(err => {
+      throw new Error('Error updating document: ' + err)
+    })
+
 // update authorized used list
 const updateAuthorizedUsers = (uid: string, userIds: string[]) =>
   collection()
@@ -343,6 +355,7 @@ export {
   updateUser as updateU,
   updateWorkingTime as updateWT,
   updateDeviceToken,
+  removeDeviceToken,
   updateAuthorizedUsers,
   removeAuthorizedUsers,
   deleteUser as deleteU

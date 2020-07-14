@@ -5,7 +5,7 @@ import { MessageUtil } from '../../utils'
 const updateAuthorizedUsers: EndPoint = {
   name: '/access/respond',
   type: 'POST',
-  description: 'To update the authorized users list of a patient',
+  description: 'To respond the authorization request made by the medical staff',
   schema: Joi.object().keys({
     userToken: Joi.string().required(),
     medicalStaffId: Joi.string().required(),

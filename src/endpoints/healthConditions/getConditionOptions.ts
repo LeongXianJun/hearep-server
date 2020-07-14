@@ -5,7 +5,7 @@ import { HealthConditionOptions } from '../../connections'
 const getConditionOptions: EndPoint = {
   name: '/healthCondition/option',
   type: 'POST',
-  description: 'To fetch the option of health condition',
+  description: 'To fetch the available option of health condition',
   schema: Joi.object().keys({
     userToken: Joi.string().required()
   }),

@@ -17,6 +17,9 @@ const updateToken = (userId: string, deviceToken: string, username?: string) =>
     deviceToken: deviceToken
   })
 
+const removeToken = (userId: string) =>
+  deviceTokens.delete(userId)
+
 const updateDeviceTokens = () =>
   getAllDeviceToken().then(result => {
     result.forEach(r => {
@@ -58,6 +61,7 @@ export default process.env.NODE_ENV === 'test'
     getAllDeviceTokens,
     getDeviceToken,
     updateToken: () => { },
+    removeToken: () => { },
     updateDeviceTokens: () => Promise.resolve(),
     sendMessages: () => Promise.resolve(),
     sendToMultipleDevices: () => Promise.resolve()
@@ -67,6 +71,7 @@ export default process.env.NODE_ENV === 'test'
     getDeviceToken,
     updateToken,
     updateDeviceTokens,
+    removeToken,
     sendMessages,
     sendToMultipleDevices: sendToMultipleDevices
   }

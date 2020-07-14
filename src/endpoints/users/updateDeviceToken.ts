@@ -6,7 +6,7 @@ import { updateDeviceToken as updateDT } from '../../connections'
 const updateDeviceToken: EndPoint = {
   name: '/user/device',
   type: 'PUT',
-  description: 'To update the deveice token of the user',
+  description: 'To update the device token of the user',
   schema: Joi.object().keys({
     userToken: Joi.string().required(),
     deviceToken: Joi.string().required()

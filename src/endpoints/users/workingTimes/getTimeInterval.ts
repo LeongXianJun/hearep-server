@@ -5,7 +5,7 @@ import { TimeInterval } from '../../../connections'
 const getTimeInterval: EndPoint = {
   name: '/workingtime/timeinterval',
   type: 'POST',
-  description: 'To the time interval for workingtime update',
+  description: 'To get the time interval for workingtime update',
   schema: Joi.object().keys({
     userToken: Joi.string().required()
   }),

@@ -5,7 +5,7 @@ import { getAppointmentsByP } from "../../connections"
 const getPatientAppointments: EndPoint = {
   name: '/appointment/patient',
   type: 'POST',
-  description: 'To fetch all of the patient\'s appointment',
+  description: 'To fetch all of the patient\'s appointments',
   schema: Joi.object().keys({
     userToken: Joi.string().required()
   }),

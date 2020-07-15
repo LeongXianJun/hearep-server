@@ -41,6 +41,7 @@ const allHRwithin6Month = (patientId: string, date: Date) => {
 
   return collection()
     .where('patientId', '==', patientId)
+    .where('type', '==', 'Health Prescription')
     .where('date', '>=', startTarget)
     .where('date', '<=', endTarget)
     .get()

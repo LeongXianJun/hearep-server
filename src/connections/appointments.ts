@@ -128,13 +128,19 @@ const checkCrashedAppointment = async (medicalStaffId: string, time: Date) => {
     .then(result => result.empty)
 }
 
-const getTurn = async (medicalStaffId: string, date: Date) =>
-  await collection()
+const getTurn = async (medicalStaffId: string, date: Date) => {
+  const currentDate = new Date(date)
+  const t = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
+  const startTarget = firestore.Timestamp.fromDate(t)
+  const endTarget = firestore.Timestamp.fromMillis(t.getTime() + 24 * 3600000)
+  return await collection()
     .where('medicalStaffId', '==', medicalStaffId)
     .where('type', '==', 'byNumber')
-    .where('date', '==', firestore.Timestamp.fromDate(new Date(date)))
+    .where('date', '>=', startTarget)
+    .where('date', '<=', endTarget)
     .get()
     .then(result => ({ 'turn': result.docs.length }))
+}
 
 // perform by patient only
 const insertAppointment = (type: Appointment[ 'type' ]) => (uid: string, input: { medicalStaffId: string, date: Date, address: string, time?: Date, turn?: number }) =>
